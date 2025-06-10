@@ -1,6 +1,9 @@
+version: '3.8'
+
 services:
   web:
     build: ./backend
+    container_name: football_api
     ports:
       - "8000:8000"
     volumes:
@@ -12,6 +15,7 @@ services:
 
   db:
     image: postgres:15
+    container_name: football_db
     restart: always
     environment:
       POSTGRES_USER: user
@@ -21,3 +25,9 @@ services:
       - "5432:5432"
     networks:
       - liga
+
+volumes:
+  postgres_data:
+
+networks:
+  liga:
