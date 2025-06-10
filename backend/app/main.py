@@ -10,8 +10,19 @@ app.include_router(leagues.router)
 
 @app.on_event("startup")
 async def on_startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    for attempt in range(10):
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            print("✅ Połączenie z bazą danych OK")
+            break
+        except OperationalError as e:
+            print(f"⏳ Próba {attempt + 1}/10: Baza danych niedostępna. Czekam 3s...")
+            await asyncio.sleep(3)
+    else:
+        print("❌ Nie udało się połączyć z bazą po 10 próbach.")
+        raise RuntimeError("Baza danych nieosiągalna")
+
 
 @app.get("/health")
 async def health():
