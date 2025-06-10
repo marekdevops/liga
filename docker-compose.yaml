@@ -9,33 +9,28 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - football_db
-    restart: always
+      - db
+    restart: always       
     networks:
       - liga
 
-  football_db:
+  db:
     image: postgres:15
     container_name: football_db
-    restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: football_db
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d football_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always        
     networks:
       - liga
-
 
 volumes:
   postgres_data:
 
 networks:
   liga:
-
