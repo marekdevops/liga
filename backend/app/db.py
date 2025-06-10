@@ -3,8 +3,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/football_db"
-
+#DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/football_db"
+DATABASE_URL = "postgresql+asyncpg://user:password@10.88.0.12:5432/football_db"
 engine = create_async_engine(DATABASE_URL, echo=True)
 
 SessionLocal = sessionmaker(
