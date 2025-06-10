@@ -13,7 +13,7 @@ services:
     networks:
       - liga
 
-  db:
+  football_db:
     image: postgres:15
     container_name: football_db
     restart: always
