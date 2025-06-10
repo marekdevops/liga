@@ -28,6 +28,16 @@ services:
     restart: always        
     networks:
       - liga
+      
+  frontend:
+    build: ./frontend
+    container_name: football_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - web
+    networks:
+      - liga
 
 volumes:
   postgres_data:
