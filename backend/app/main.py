@@ -34,10 +34,4 @@ async def health():
     return {"status": "ok"}
 
 
-@router.post("/")
-async def create_league(league: LeagueCreate, session: AsyncSession = Depends(get_async_session)):
-    new_league = League(**league.dict())
-    session.add(new_league)
-    await session.commit()
-    await session.refresh(new_league)
-    return new_league
+
