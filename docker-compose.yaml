@@ -10,8 +10,7 @@ services:
       - ./backend:/app
     depends_on:
       - football_db
-    networks:
-      - liga
+
 
   football_db:
     image: postgres:15
@@ -28,14 +27,9 @@ services:
       retries: 5
     ports:
       - "5432:5432"
-    networks:
-      - liga
+
 
 
 volumes:
   postgres_data:
 
-networks:
-  liga:
-    aliases:
-      - football_db
