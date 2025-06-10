@@ -10,9 +10,9 @@ services:
       - ./backend:/app
     depends_on:
       - football_db
+    restart: always
     networks:
       - liga
-    restart: always
 
   football_db:
     image: postgres:15
