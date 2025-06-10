@@ -9,7 +9,7 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - db
+      - football_db
     networks:
       - liga
 
@@ -21,13 +21,21 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: football_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d football_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5432:5432"
     networks:
       - liga
+
 
 volumes:
   postgres_data:
 
 networks:
   liga:
+    aliases:
+      - football_db
