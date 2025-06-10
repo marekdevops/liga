@@ -5,6 +5,7 @@ from sqlalchemy.future import select
 from app.db import get_async_session
 from app.models.team import Team
 from app.schemas.league import LeagueCreate
+
 router = APIRouter(prefix="/teams", tags=["teams"])
 
 @router.get("/")
