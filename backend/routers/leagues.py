@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_async_session
 from app.models.league import League
-from schemas.league import LeagueCreate, LeagueOut
+from app.schemas.league import LeagueCreate, LeagueOut
 from sqlalchemy.future import select
 
 router = APIRouter(prefix="/leagues", tags=["leagues"])
