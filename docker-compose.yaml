@@ -12,6 +12,7 @@ services:
       - football_db
     networks:
       - liga
+    restart: always
 
   football_db:
     image: postgres:15

@@ -5,6 +5,7 @@ from app.db import engine, Base
 from app.models.league import League
 from routers import leagues 
 from sqlalchemy.exc import OperationalError
+import asyncio
 
 app = FastAPI()
 app.include_router(leagues.router)
