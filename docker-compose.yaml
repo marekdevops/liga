@@ -10,6 +10,8 @@ services:
       - ./backend:/app
     depends_on:
       - db
+    networks:
+      - liga
 
   db:
     image: postgres:15
@@ -23,6 +25,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - liga
 
 volumes:
   postgres_data:
+
+networks:
+  liga:
