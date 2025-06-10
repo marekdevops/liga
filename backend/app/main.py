@@ -3,12 +3,15 @@
 from fastapi import FastAPI
 from app.db import engine, Base
 from app.models.league import League
-from routers import leagues 
+from routers import leagues
+from routers import teams
+
 from sqlalchemy.exc import OperationalError
 import asyncio
 
 app = FastAPI()
 app.include_router(leagues.router)
+app.include_router(teams.router)
 
 @app.on_event("startup")
 async def on_startup():
@@ -29,3 +32,12 @@ async def on_startup():
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@router.post("/")
+async def create_league(league: LeagueCreate, session: AsyncSession = Depends(get_async_session)):
+    new_league = League(**league.dict())
+    session.add(new_league)
+    await session.commit()
+    await session.refresh(new_league)
+    return new_league
