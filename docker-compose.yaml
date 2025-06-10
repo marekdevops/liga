@@ -33,3 +33,7 @@ services:
 volumes:
   postgres_data:
 
+networks:
+  liga:
+    aliases:
+      - football_db
