@@ -28,9 +28,12 @@ services:
     restart: always        
     networks:
       - liga
-      
+
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        VITE_API_URL: http://web:8000
     container_name: football_frontend
     ports:
       - "3000:80"
