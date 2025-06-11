@@ -4,7 +4,7 @@ function App() {
   const [leagues, setLeagues] = useState([]);
 
   useEffect(() => {
-    fetch("/api/leagues/")
+    fetch("/leagues/")     
       .then((res) => res.json())
       .then((data) => setLeagues(data))
       .catch((err) => console.error("Błąd pobierania danych:", err));
