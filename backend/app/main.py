@@ -5,6 +5,7 @@ from app.db import engine, Base
 from app.models.league import League
 from routers import leagues
 from routers import teams
+from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.exc import OperationalError
 import asyncio
@@ -12,7 +13,13 @@ import asyncio
 app = FastAPI()
 app.include_router(leagues.router)
 app.include_router(teams.router)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Można zawęzić np. ["http://localhost:3000"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.on_event("startup")
 async def on_startup():
     for attempt in range(10):
