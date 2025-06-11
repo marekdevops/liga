@@ -4,7 +4,7 @@ function App() {
   const [leagues, setLeagues] = useState([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/leagues`)
+    fetch("/api/leagues")
       .then((res) => res.json())
       .then((data) => setLeagues(data))
       .catch((err) => console.error("Błąd pobierania danych:", err));
