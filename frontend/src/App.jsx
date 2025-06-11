@@ -23,5 +23,5 @@ function App() {
     </div>
   );
 }
-
+console.log('API URL:', import.meta.env.VITE_API_URL);
 export default App;
