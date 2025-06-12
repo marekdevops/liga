@@ -1,2 +1,1 @@
-from routers import players
-app.include_router(players.router)
+from . import leagues, players, teams  # tylko importujesz routery

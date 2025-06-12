@@ -5,6 +5,7 @@ from app.db import engine, Base
 from app.models.league import League
 from routers import leagues
 from routers import teams
+from routers import players
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.exc import OperationalError
