@@ -7,7 +7,7 @@ function TeamDetails() {
   const [players, setPlayers] = useState([]);
 
   useEffect(() => {
-    fetch(`/api/teams/${id}/players`)
+    fetch(`/teams/${id}/players`)
       .then((res) => res.json())
       .then((data) => setPlayers(data))
       .catch((err) => console.error("Błąd pobierania zawodników:", err));

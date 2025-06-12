@@ -6,7 +6,7 @@ function Home() {
   const [leagues, setLeagues] = useState([]);
 
   useEffect(() => {
-    fetch("/api/leagues/")
+    fetch("/leagues/")
       .then((res) => res.json())
       .then((data) => setLeagues(data))
       .catch((err) => console.error("Błąd pobierania lig:", err));
