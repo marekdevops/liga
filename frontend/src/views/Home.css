@@ -1,0 +1,32 @@
+.home-container {
+    text-align: center;
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  .home-links {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2rem;
+  }
+  
+  .home-links div {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    width: 40%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .home-links a {
+    display: inline-block;
+    margin: 0.5rem 0;
+    text-decoration: none;
+    color: #0077cc;
+    font-weight: bold;
+  }
+  
+  .home-links a:hover {
+    color: #004999;
+  }
+  
