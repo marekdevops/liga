@@ -10,7 +10,7 @@ function App() {
   return (
     <Router>
 <Routes>
-  <Route path="/" element={<Home />} /> {/* 🏠 Strona startowa */}
+  <Route path="/" element={<Home />} /> {/* Strona startowa */}
 
   {/* Publiczne */}
   <Route path="/leagues" element={<LeagueList />} />
