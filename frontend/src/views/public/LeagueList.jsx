@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function LeagueList() {
   const [leagues, setLeagues] = useState([]);
@@ -7,7 +8,7 @@ export default function LeagueList() {
     fetch("/leagues/")
       .then((res) => res.json())
       .then((data) => {
-        console.log("ODEBRANE LIGI:", data); // 👈 sprawdz w konsoli
+        console.log("ODEBRANE LIGI:", data);
         setLeagues(data);
       })
       .catch((err) => console.error("Błąd pobierania lig:", err));
@@ -20,7 +21,9 @@ export default function LeagueList() {
       <ul>
         {leagues.map((league) => (
           <li key={league.id}>
-            {league.name} ({league.country})
+            <Link to={`/league/${league.id}`}>
+              {league.name} ({league.country})
+            </Link>
           </li>
         ))}
       </ul>
