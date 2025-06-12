@@ -5,7 +5,6 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from app.db import Base
 
 Base = declarative_base()
 #DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/football_db"
