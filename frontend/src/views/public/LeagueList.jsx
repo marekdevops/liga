@@ -1,30 +1,29 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 
-function LeagueList() {
+export default function LeagueList() {
   const [leagues, setLeagues] = useState([]);
 
   useEffect(() => {
     fetch("/leagues/")
       .then((res) => res.json())
-      .then((data) => setLeagues(data))
+      .then((data) => {
+        console.log("ODEBRANE LIGI:", data); // 👈 sprawdz w konsoli
+        setLeagues(data);
+      })
       .catch((err) => console.error("Błąd pobierania lig:", err));
   }, []);
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Dostępne ligi</h1>
-      <ul className="space-y-2">
+    <div>
+      <h2>Dostępne ligi</h2>
+      {leagues.length === 0 && <p>Brak lig do wyświetlenia.</p>}
+      <ul>
         {leagues.map((league) => (
           <li key={league.id}>
-            <Link to={`/league/${league.id}`} className="text-blue-600 underline">
-              {league.name}
-            </Link>
+            {league.name} ({league.country})
           </li>
         ))}
       </ul>
     </div>
   );
 }
-
-export default LeagueList;
