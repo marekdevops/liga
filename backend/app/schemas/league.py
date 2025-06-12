@@ -1,13 +1,11 @@
 from pydantic import BaseModel
 
-class LeagueBase(BaseModel):
+class LeagueCreate(BaseModel):
     name: str
 
-class LeagueCreate(LeagueBase):
-    pass
-
-class LeagueRead(LeagueBase):
+class LeagueRead(BaseModel):
     id: int
+    name: str
 
     class Config:
-        from_attributes = True
+        from_attributes = True  # jeśli używasz Pydantic v2
