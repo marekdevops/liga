@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from app.db import get_async_session
 from app.models.team import Team
 from app.models.player import Player
-from schemas.player import PlayerCreate, PlayerRead
+from app.schemas.player import PlayerCreate, PlayerRead
 
 router = APIRouter(
     prefix="/players",
