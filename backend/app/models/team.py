@@ -1,5 +1,7 @@
 from sqlalchemy.orm import relationship
 from app.models.player import Player  # Dodaj ten import u góry
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from app.db import Base
 class Team(Base):
     __tablename__ = "teams"
