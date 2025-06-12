@@ -1,47 +1,52 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function LeagueForm() {
+export default function LeagueForm() {
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch("/leagues/", {
+
+    const response = await fetch("/leagues/", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, country }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        alert("Liga dodana");
-        setName("");
-        setCountry("");
-      })
-      .catch((err) => console.error("Błąd:", err));
+    });
+
+    if (response.ok) {
+      alert("Liga dodana pomyślnie!");
+      navigate("/"); // wróć do listy lig
+    } else {
+      alert("Błąd podczas dodawania ligi.");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Dodaj ligę</h2>
-      <input
-        type="text"
-        placeholder="Nazwa"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Kraj"
-        value={country}
-        onChange={(e) => setCountry(e.target.value)}
-        required
-      />
-      <button type="submit">Dodaj ligę</button>
-    </form>
+    <div>
+      <h2>Dodaj nową ligę</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Nazwa ligi:</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Kraj:</label>
+          <input
+            type="text"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Dodaj ligę</button>
+      </form>
+    </div>
   );
 }
-
-export default LeagueForm;
