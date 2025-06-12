@@ -13,6 +13,7 @@ import asyncio
 app = FastAPI()
 app.include_router(leagues.router)
 app.include_router(teams.router)
+app.include_router(players.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Można zawęzić np. ["http://localhost:3000"]

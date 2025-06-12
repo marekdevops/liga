@@ -5,6 +5,8 @@ from sqlalchemy.future import select
 from app.db import get_async_session
 from app.models.team import Team
 from app.schemas.league import LeagueCreate
+from app.models.player import Player
+from schemas.player import PlayerRead
 
 router = APIRouter(prefix="/teams", tags=["teams"])
 
@@ -20,3 +22,9 @@ async def create_league(league: LeagueCreate, session: AsyncSession = Depends(ge
     await session.commit()
     await session.refresh(new_league)
     return new_league
+
+@router.get("/{team_id}/players", response_model=list[PlayerRead])
+async def get_team_players(team_id: int, session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(Player).where(Player.team_id == team_id))
+    players = result.scalars().all()
+    return players
