@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function LeagueForm() {
   const [name, setName] = useState("");
-  const [country, setCountry] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -12,12 +11,12 @@ export default function LeagueForm() {
     const response = await fetch("/leagues/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, country }),
+      body: JSON.stringify({ name }),
     });
 
     if (response.ok) {
       alert("Liga dodana pomyślnie!");
-      navigate("/"); // wróć do listy lig
+      navigate("/");
     } else {
       alert("Błąd podczas dodawania ligi.");
     }
@@ -33,15 +32,6 @@ export default function LeagueForm() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Kraj:</label>
-          <input
-            type="text"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
             required
           />
         </div>

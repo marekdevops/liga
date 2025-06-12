@@ -7,5 +7,4 @@ class League(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    country = Column(String)
     teams = relationship("Team", back_populates="league", cascade="all, delete-orphan")
