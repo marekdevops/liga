@@ -1,15 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import LeagueDetails from "./pages/LeagueDetails";
-import TeamDetails from "./pages/TeamDetails";
+import LeagueList from "./views/LeagueList";
+import LeagueForm from "./views/admin/LeagueForm";
+import TeamForm from "./views/admin/TeamForm";
+import PlayerForm from "./views/admin/PlayerForm";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/league/:id" element={<LeagueDetails />} />
-        <Route path="/team/:id" element={<TeamDetails />} />
+        {/* Widok publiczny */}
+        <Route path="/" element={<LeagueList />} />
+
+        {/* Widoki administracyjne */}
+        <Route path="/admin/leagues/new" element={<LeagueForm />} />
+        <Route path="/admin/teams/new" element={<TeamForm />} />
+        <Route path="/admin/players/new" element={<PlayerForm />} />
       </Routes>
     </Router>
   );
