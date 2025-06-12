@@ -8,18 +8,21 @@
     display: flex;
     justify-content: space-around;
     margin-top: 2rem;
+    flex-wrap: wrap;
+    gap: 2rem;
   }
   
   .home-links div {
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 1rem 2rem;
-    width: 40%;
+    width: 300px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-color: #f9f9f9;
   }
   
   .home-links a {
-    display: inline-block;
+    display: block;
     margin: 0.5rem 0;
     text-decoration: none;
     color: #0077cc;

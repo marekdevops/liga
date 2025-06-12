@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "./Home.css"; // stylujemy osobno
+import "./Home.css";
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <div className="home-links">
         <div>
           <h2>👀 Widok publiczny</h2>
-          <Link to="/">Zobacz dostępne ligi</Link>
+          <Link to="/leagues">Zobacz dostępne ligi</Link>
         </div>
         <div>
           <h2>🛠️ Panel administracyjny</h2>
