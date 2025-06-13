@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from app.db import engine, Base
 from app.models.league import League
+from app.models.team import Team
 from routers import leagues
 from routers import teams
 from routers import players
@@ -11,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 import asyncio
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.include_router(leagues.router)
 app.include_router(teams.router)

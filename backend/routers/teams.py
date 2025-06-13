@@ -2,8 +2,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 from app.db import get_async_session
+from app.db import get_db
 from app.models.team import Team
+from app.schemas.team import TeamCreate, TeamRead
 from app.schemas.league import LeagueCreate
 from app.models.player import Player
 from app.schemas.player import PlayerRead
@@ -28,3 +31,11 @@ async def get_team_players(team_id: int, session: AsyncSession = Depends(get_asy
     result = await session.execute(select(Player).where(Player.team_id == team_id))
     players = result.scalars().all()
     return players
+
+@router.post("/teams/", response_model=TeamRead)
+def create_team(team: TeamCreate, db: Session = Depends(get_db)):
+    db_team = Team(name=team.name, league_id=team.league_id)
+    db.add(db_team)
+    db.commit()
+    db.refresh(db_team)
+    return db_team
