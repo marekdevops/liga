@@ -28,6 +28,15 @@ services:
     restart: always        
     networks:
       - liga
+      
+  init-db:
+    build: ./backend
+    command: ["python", "app/db_init.py"]
+    depends_on:
+      - db
+    networks:
+      - liga
+    restart: "no"
 
   frontend:
     build: 
@@ -41,6 +50,7 @@ services:
       - web
     networks:
       - liga
+  
 
 volumes:
   postgres_data:
