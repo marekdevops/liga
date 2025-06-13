@@ -6,7 +6,7 @@ from app.schemas.league import LeagueCreate, LeagueRead
 from app.models.team import Team
 from app.schemas.team import TeamRead
 from sqlalchemy.future import select
-
+from fastapi import Path
 router = APIRouter(prefix="/leagues", tags=["leagues"])
 
 @router.post("/", response_model=LeagueRead)
