@@ -27,11 +27,6 @@ export default function LeagueList() {
           </li>
         ))}
       </ul>
-      <li key={league.id}>
-  <Link to={`/league/${league.id}/teams`}>
-    {league.name}
-  </Link>
-</li>
     </div>
   );
 }
