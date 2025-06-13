@@ -1,2 +1,2 @@
 from .player import Player
-from . import teams
+from .team import Team
