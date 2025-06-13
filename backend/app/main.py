@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 import asyncio
 
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.include_router(leagues.router)
 app.include_router(teams.router)
