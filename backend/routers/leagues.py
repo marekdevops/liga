@@ -7,7 +7,7 @@ from app.models.team import Team
 from app.schemas.team import TeamRead
 from sqlalchemy.future import select
 from fastapi import Path
-router = APIRouter(prefix="/leagues", tags=["leagues"])
+router = APIRouter(prefix="/league", tags=["LeagueRead"])
 
 @router.post("/", response_model=LeagueRead)
 async def create_league(league: LeagueCreate, session: AsyncSession = Depends(get_async_session)):
@@ -18,7 +18,7 @@ async def create_league(league: LeagueCreate, session: AsyncSession = Depends(ge
     return db_league
 
 @router.get("/", response_model=list[LeagueRead])
-async def get_leagues(session: AsyncSession = Depends(get_async_session)):
+async def get_LeagueRead(session: AsyncSession = Depends(get_async_session)):
     result = await session.execute(select(League))
     return result.scalars().all()
 
