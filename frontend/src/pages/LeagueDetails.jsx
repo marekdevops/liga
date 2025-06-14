@@ -7,7 +7,7 @@ function LeagueDetails() {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    fetch(`/leagues/${id}/teams`)
+    fetch(`/league/${id}/teams`)
       .then((res) => res.json())
       .then((data) => setTeams(data))
       .catch((err) => console.error("Błąd pobierania drużyn:", err));

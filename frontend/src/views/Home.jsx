@@ -8,7 +8,7 @@ export default function Home() {
       <div className="home-links">
         <div>
           <h2>👀 Widok publiczny</h2>
-          <Link to="/leagues">Zobacz dostępne ligi</Link>
+          <Link to="/league">Zobacz dostępne ligi</Link>
         </div>
         <div>
           <h2>🛠️ Panel administracyjny</h2>
