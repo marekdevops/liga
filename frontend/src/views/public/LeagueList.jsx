@@ -5,7 +5,7 @@ export default function LeagueList() {
   const [leagues, setLeagues] = useState([]);
 
   useEffect(() => {
-    fetch("/leagues/")
+    fetch("/league/")
       .then((res) => res.json())
       .then((data) => {
         console.log("ODEBRANE LIGI:", data);

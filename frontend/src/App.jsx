@@ -11,7 +11,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/leagues" element={<LeagueList />} />
+        <Route path="/league" element={<LeagueList />} />
         <Route path="/league/:leagueId" element={<LeagueDetails />} />
         <Route path="/admin/leagues/new" element={<LeagueForm />} />
         <Route path="/admin/teams/new" element={<TeamForm />} />
