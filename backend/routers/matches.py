@@ -133,6 +133,7 @@ async def get_league_table(league_id: int, session: AsyncSession = Depends(get_a
                     stats["losses"] += 1
         
         stats["goal_difference"] = stats["goals_for"] - stats["goals_against"]
+        stats["position"] = 0  # Tymczasowa pozycja
         standings.append(TeamStanding(**stats))
     
     # Sortuj tabelę według punktów, różnicy bramek, bramek zdobytych

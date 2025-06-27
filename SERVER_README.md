@@ -19,7 +19,10 @@ docker-compose up -d --build
 # lub na Windows:
 # .\check_status.ps1
 
-# 5. Inicjalizuj przykładowe dane (opcjonalnie)
+# 5. W razie błędów połączenia, zrestartuj API
+docker restart football_api
+
+# 6. Inicjalizuj przykładowe dane (opcjonalnie)
 docker exec football_api python init_sample_data.py
 ```
 
@@ -66,7 +69,7 @@ docker-compose logs
 ## 📊 Endpointy API
 
 - `GET /league/` - Lista lig
-- `GET /league/{id}/table` - Tabela ligowa
+- `GET /matches/league/{id}/table` - Tabela ligowa
 - `GET /matches/league/{id}` - Terminarz ligi
 - `POST /matches/league/{id}/generate-schedule` - Generuj terminarz
 - `PUT /matches/{id}/result` - Dodaj wynik meczu
