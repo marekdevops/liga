@@ -4,8 +4,9 @@ import LeagueList from "./views/public/LeagueList";
 import LeagueForm from "./views/admin/LeagueForm";
 import TeamForm from "./views/admin/TeamForm";
 import PlayerForm from "./views/admin/PlayerForm";
-import LeagueDetails from "./views/public/LeagueDetails"; // jeśli placeholder już istnieje
+import LeagueDetails from "./views/public/LeagueDetails";
 import LeagueTeams from "./views/public/LeagueTeams";
+import TeamDetails from "./pages/TeamDetails";
 function App() {
   return (
     <Router>
@@ -17,6 +18,7 @@ function App() {
         <Route path="/admin/teams/new" element={<TeamForm />} />
         <Route path="/admin/players/new" element={<PlayerForm />} />
         <Route path="/league/:leagueId/teams" element={<LeagueTeams />} />
+        <Route path="/team/:id" element={<TeamDetails />} />
       </Routes>
     </Router>
   );

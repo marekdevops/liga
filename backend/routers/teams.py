@@ -1,12 +1,13 @@
 # backend/routers/teams.py
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.db import get_async_session
 from app.models.team import Team
 from app.models.player import Player
+from app.models.league import League
 from app.schemas.team import TeamCreate, TeamRead
 from app.schemas.player import PlayerRead
 
@@ -19,6 +20,11 @@ async def get_teams(session: AsyncSession = Depends(get_async_session)):
 
 @router.post("/", response_model=TeamRead)
 async def create_team(team: TeamCreate, session: AsyncSession = Depends(get_async_session)):
+    # Sprawdź czy liga istnieje
+    league = await session.get(League, team.league_id)
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+    
     db_team = Team(name=team.name, league_id=team.league_id)
     session.add(db_team)
     await session.commit()

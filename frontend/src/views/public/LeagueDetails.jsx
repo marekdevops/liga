@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 
 export default function LeagueDetails() {
   const { leagueId } = useParams();
@@ -20,7 +20,9 @@ export default function LeagueDetails() {
       ) : (
         <ul>
           {teams.map((team) => (
-            <li key={team.id}>{team.name}</li>
+            <li key={team.id}>
+              <Link to={`/team/${team.id}`}>{team.name}</Link>
+            </li>
           ))}
         </ul>
       )}

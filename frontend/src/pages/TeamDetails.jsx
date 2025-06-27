@@ -19,7 +19,7 @@ function TeamDetails() {
       <ul>
         {players.map((player) => (
           <li key={player.id}>
-            {player.first_name} {player.last_name} (#{player.jersey_number})
+            {player.first_name} {player.last_name} (#{player.shirt_number})
           </li>
         ))}
       </ul>

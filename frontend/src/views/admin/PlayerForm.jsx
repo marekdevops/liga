@@ -16,7 +16,7 @@ function PlayerForm() {
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
-          number: parseInt(number),
+          shirt_number: parseInt(number),
           team_id: parseInt(teamId),
         }),
       });
