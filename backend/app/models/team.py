@@ -12,3 +12,7 @@ class Team(Base):
 
     league = relationship("League", back_populates="teams")
     players = relationship("Player", back_populates="team", cascade="all, delete-orphan")
+    
+    # Relacje do meczów
+    home_matches = relationship("Match", foreign_keys="Match.home_team_id", back_populates="home_team")
+    away_matches = relationship("Match", foreign_keys="Match.away_team_id", back_populates="away_team")

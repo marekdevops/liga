@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from app.db import engine, Base
 from app.models.league import League
 from app.models.team import Team
+from app.models.match import Match
 from routers import leagues
 from routers import teams
 from routers import players
+from routers import matches
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.exc import OperationalError
@@ -17,6 +19,7 @@ app = FastAPI()
 app.include_router(leagues.router)
 app.include_router(teams.router)
 app.include_router(players.router)
+app.include_router(matches.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Można zawęzić np. ["http://localhost:3000"]

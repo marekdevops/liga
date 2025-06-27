@@ -16,6 +16,7 @@ export default function Home() {
             <li><Link to="/admin/leagues/new">➕ Dodaj ligę</Link></li>
             <li><Link to="/admin/teams/new">➕ Dodaj drużynę</Link></li>
             <li><Link to="/admin/players/new">➕ Dodaj zawodnika</Link></li>
+            <li><Link to="/admin/matches/new">⚽ Dodaj mecz</Link></li>
           </ul>
         </div>
       </div>
