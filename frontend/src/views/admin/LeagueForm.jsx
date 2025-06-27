@@ -23,19 +23,53 @@ export default function LeagueForm() {
   };
 
   return (
-    <div>
-      <h2>Dodaj nową ligę</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nazwa ligi:</label>
+    <div style={{ 
+      padding: "20px", 
+      backgroundColor: "#1a1a1a", 
+      color: "#ffffff", 
+      minHeight: "100vh" 
+    }}>
+      <h2 style={{ color: "#4CAF50", marginBottom: "20px" }}>Dodaj nową ligę</h2>
+      <form onSubmit={handleSubmit} style={{ maxWidth: "400px" }}>
+        <div style={{ marginBottom: "15px" }}>
+          <label style={{ 
+            display: "block", 
+            marginBottom: "5px", 
+            color: "#ffffff",
+            fontSize: "16px"
+          }}>
+            Nazwa ligi:
+          </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              color: "#ffffff",
+              fontSize: "16px"
+            }}
           />
         </div>
-        <button type="submit">Dodaj ligę</button>
+        <button 
+          type="submit"
+          style={{
+            backgroundColor: "#4CAF50",
+            color: "#ffffff",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "4px",
+            fontSize: "16px",
+            cursor: "pointer"
+          }}
+        >
+          Dodaj ligę
+        </button>
       </form>
     </div>
   );

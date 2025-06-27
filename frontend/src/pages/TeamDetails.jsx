@@ -14,12 +14,30 @@ function TeamDetails() {
   }, [id]);
 
   return (
-    <div>
-      <h2>Zawodnicy w drużynie</h2>
-      <ul>
+    <div style={{ 
+      padding: "20px", 
+      backgroundColor: "#1a1a1a", 
+      color: "#ffffff", 
+      minHeight: "100vh" 
+    }}>
+      <h2 style={{ color: "#4CAF50", marginBottom: "20px" }}>
+        Zawodnicy w drużynie
+      </h2>
+      <ul style={{ listStyle: "none", padding: 0 }}>
         {players.map((player) => (
-          <li key={player.id}>
-            {player.first_name} {player.last_name} (#{player.shirt_number})
+          <li 
+            key={player.id}
+            style={{
+              marginBottom: "12px",
+              padding: "12px 16px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              borderRadius: "6px",
+              color: "#ffffff",
+              fontSize: "16px"
+            }}
+          >
+            👤 {player.first_name} {player.last_name} (#{player.shirt_number})
           </li>
         ))}
       </ul>
