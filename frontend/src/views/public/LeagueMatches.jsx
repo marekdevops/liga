@@ -38,7 +38,18 @@ export default function LeagueMatches() {
   }, [leagueId]);
 
   if (loading) {
-    return <div>Ładowanie terminarza...</div>;
+    return (
+      <div style={{ 
+        padding: "20px", 
+        backgroundColor: "#1a1a1a", 
+        color: "#ffffff", 
+        minHeight: "100vh",
+        textAlign: "center",
+        fontSize: "18px"
+      }}>
+        Ładowanie terminarza...
+      </div>
+    );
   }
 
   // Grupuj mecze według kolejek
@@ -56,45 +67,106 @@ export default function LeagueMatches() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Terminarz rozgrywek</h2>
+    <div style={{ 
+      padding: "20px", 
+      backgroundColor: "#1a1a1a", 
+      color: "#ffffff", 
+      minHeight: "100vh" 
+    }}>
+      <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>Terminarz rozgrywek</h2>
       <div style={{ marginBottom: "20px" }}>
-        <Link to={`/league/${leagueId}`} style={{ marginRight: "10px" }}>
+        <Link 
+          to={`/league/${leagueId}`} 
+          style={{ 
+            marginRight: "15px",
+            color: "#4CAF50",
+            textDecoration: "none",
+            padding: "8px 12px",
+            border: "1px solid #4CAF50",
+            borderRadius: "4px",
+            backgroundColor: "rgba(76, 175, 80, 0.1)"
+          }}
+        >
           📊 Powrót do tabeli
         </Link>
-        <Link to={`/admin/matches/new?league=${leagueId}`}>
+        <Link 
+          to={`/admin/matches/new?league=${leagueId}`}
+          style={{ 
+            color: "#2196F3",
+            textDecoration: "none",
+            padding: "8px 12px",
+            border: "1px solid #2196F3",
+            borderRadius: "4px",
+            backgroundColor: "rgba(33, 150, 243, 0.1)"
+          }}
+        >
           ➕ Dodaj mecz
         </Link>
       </div>
 
       {Object.keys(matchesByRound).length === 0 ? (
-        <p>Brak meczów w terminarzu.</p>
+        <p style={{ color: "#cccccc", fontSize: "16px" }}>Brak meczów w terminarzu.</p>
       ) : (
         Object.keys(matchesByRound)
           .sort((a, b) => parseInt(a) - parseInt(b))
           .map((round) => (
             <div key={round} style={{ marginBottom: "30px" }}>
-              <h3>Kolejka {round}</h3>
-              <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "15px" }}>
+              <h3 style={{ 
+                color: "#4CAF50", 
+                marginBottom: "15px",
+                borderBottom: "2px solid #4CAF50",
+                paddingBottom: "8px"
+              }}>
+                Kolejka {round}
+              </h3>
+              <div style={{ 
+                border: "1px solid #444", 
+                borderRadius: "8px", 
+                padding: "15px",
+                backgroundColor: "#2a2a2a"
+              }}>
                 {matchesByRound[round].map((match) => (
                   <div key={match.id} style={matchStyle}>
                     <div style={{ flex: 1, textAlign: "right", padding: "10px" }}>
-                      <strong>{teams[match.home_team_id] || `Drużyna ${match.home_team_id}`}</strong>
+                      <strong style={{ color: "#ffffff", fontSize: "16px" }}>
+                        {teams[match.home_team_id] || `Drużyna ${match.home_team_id}`}
+                      </strong>
                     </div>
                     
-                    <div style={{ padding: "10px", minWidth: "120px", textAlign: "center" }}>
+                    <div style={{ padding: "10px", minWidth: "150px", textAlign: "center" }}>
                       {match.is_finished ? (
-                        <div style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+                        <div style={{ 
+                          fontSize: "28px", 
+                          fontWeight: "bold", 
+                          color: "#4CAF50",
+                          padding: "10px",
+                          border: "2px solid #4CAF50",
+                          borderRadius: "8px",
+                          backgroundColor: "rgba(76, 175, 80, 0.1)"
+                        }}>
                           {match.home_goals} : {match.away_goals}
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: "14px", color: "#666" }}>
+                          <div style={{ 
+                            fontSize: "14px", 
+                            color: "#cccccc",
+                            marginBottom: "8px"
+                          }}>
                             {formatDate(match.match_date)}
                           </div>
                           <Link 
                             to={`/admin/matches/${match.id}/result`}
-                            style={{ fontSize: "12px", color: "#007bff", textDecoration: "none" }}
+                            style={{ 
+                              fontSize: "13px", 
+                              color: "#FF9800", 
+                              textDecoration: "none",
+                              padding: "6px 10px",
+                              border: "1px solid #FF9800",
+                              borderRadius: "4px",
+                              backgroundColor: "rgba(255, 152, 0, 0.1)",
+                              display: "inline-block"
+                            }}
                           >
                             ⚽ Dodaj wynik
                           </Link>
@@ -103,7 +175,9 @@ export default function LeagueMatches() {
                     </div>
                     
                     <div style={{ flex: 1, textAlign: "left", padding: "10px" }}>
-                      <strong>{teams[match.away_team_id] || `Drużyna ${match.away_team_id}`}</strong>
+                      <strong style={{ color: "#ffffff", fontSize: "16px" }}>
+                        {teams[match.away_team_id] || `Drużyna ${match.away_team_id}`}
+                      </strong>
                     </div>
                   </div>
                 ))}
@@ -118,9 +192,10 @@ export default function LeagueMatches() {
 const matchStyle = {
   display: "flex",
   alignItems: "center",
-  borderBottom: "1px solid #eee",
+  borderBottom: "1px solid #444",
   padding: "15px 0",
-  backgroundColor: "#f9f9f9",
-  margin: "5px 0",
-  borderRadius: "4px"
+  backgroundColor: "#333333",
+  margin: "8px 0",
+  borderRadius: "6px",
+  border: "1px solid #555"
 };
