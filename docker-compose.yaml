@@ -25,6 +25,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres_backup:/backup  # Dodatkowy folder na backupy
     restart: always        
     networks:
       - liga
@@ -45,6 +46,11 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./postgres_data  # Lokalna ścieżka na serwerze
 
 networks:
   liga:
