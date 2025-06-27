@@ -6,6 +6,30 @@ export default function LeagueDetails() {
   const [standings, setStandings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const handleGenerateSchedule = async () => {
+    if (window.confirm("Czy na pewno chcesz wygenerować kompletny terminarz dla tej ligi? To może nadpisać istniejące mecze.")) {
+      try {
+        const response = await fetch(`/matches/league/${leagueId}/generate-schedule`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          alert(`${result.message}\nLiczba meczów: ${result.total_matches}\nLiczba kolejek: ${result.total_rounds}`);
+          // Odśwież tabelę po wygenerowaniu terminarza
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          alert(`Błąd: ${error.detail}`);
+        }
+      } catch (err) {
+        console.error("Błąd:", err);
+        alert("Wystąpił błąd podczas generowania terminarza.");
+      }
+    }
+  };
+
   useEffect(() => {
     fetch(`/matches/league/${leagueId}/table`)
       .then((res) => res.json())
@@ -49,6 +73,7 @@ export default function LeagueDetails() {
         <Link 
           to={`/admin/matches/new?league=${leagueId}`}
           style={{ 
+            marginRight: "10px",
             color: "#4caf50", 
             textDecoration: "none",
             padding: "8px 12px",
@@ -59,6 +84,21 @@ export default function LeagueDetails() {
         >
           ➕ Dodaj mecz
         </Link>
+        <button
+          onClick={handleGenerateSchedule}
+          style={{ 
+            color: "#ff9800", 
+            backgroundColor: "transparent",
+            textDecoration: "none",
+            padding: "8px 12px",
+            border: "1px solid #ff9800",
+            borderRadius: "4px",
+            display: "inline-block",
+            cursor: "pointer"
+          }}
+        >
+          ⚡ Generuj terminarz
+        </button>
       </div>
       
       {standings.length === 0 ? (
