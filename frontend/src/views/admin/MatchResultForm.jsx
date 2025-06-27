@@ -10,15 +10,25 @@ export default function MatchResultForm() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // W prawdziwej aplikacji pobieralibyśmy szczegóły meczu
-    // Na razie symulujemy
-    setMatch({
-      id: matchId,
-      home_team_id: 1,
-      away_team_id: 2,
-      // Dodaj więcej szczegółów jak będzie potrzeba
-    });
-    setLoading(false);
+    // Pobierz szczegóły meczu
+    const fetchMatchDetails = async () => {
+      try {
+        const response = await fetch(`/matches/${matchId}`);
+        if (response.ok) {
+          const matchData = await response.json();
+          setMatch(matchData);
+        } else {
+          throw new Error("Mecz nie znaleziony");
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Błąd pobierania meczu:", err);
+        alert("Nie można pobrać szczegółów meczu");
+        setLoading(false);
+      }
+    };
+
+    fetchMatchDetails();
   }, [matchId]);
 
   const handleSubmit = async (e) => {

@@ -26,6 +26,34 @@ export default function MatchForm() {
     }
   }, [searchParams]);
 
+  const handleGenerateSchedule = async () => {
+    if (!leagueId) {
+      alert("Proszę wybrać ligę!");
+      return;
+    }
+
+    if (window.confirm("Czy na pewno chcesz wygenerować kompletny terminarz dla tej ligi? Istniejące mecze zostaną zastąpione.")) {
+      try {
+        const response = await fetch(`/matches/league/${leagueId}/generate-schedule`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          alert(`${result.message}\nLiczba meczów: ${result.total_matches}\nLiczba kolejek: ${result.total_rounds}`);
+          navigate(`/league/${leagueId}/matches`);
+        } else {
+          const error = await response.json();
+          alert(`Błąd: ${error.detail}`);
+        }
+      } catch (err) {
+        console.error("Błąd:", err);
+        alert("Wystąpił błąd podczas generowania terminarza.");
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -136,6 +164,14 @@ export default function MatchForm() {
 
         <button type="submit" style={buttonStyle}>
           Dodaj mecz
+        </button>
+        
+        <button 
+          type="button" 
+          onClick={handleGenerateSchedule}
+          style={{ ...buttonStyle, backgroundColor: "#ff9800", marginTop: "10px" }}
+        >
+          🗓️ Zaproponuj kompletny terminarz
         </button>
       </form>
     </div>

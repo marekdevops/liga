@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_
+from datetime import datetime, timedelta
 
 from app.db import get_async_session
 from app.models.match import Match
@@ -75,13 +76,16 @@ async def get_league_table(league_id: int, session: AsyncSession = Depends(get_a
     teams_result = await session.execute(select(Team).where(Team.league_id == league_id))
     teams = teams_result.scalars().all()
     
+    if not teams:
+        return []
+    
     # Pobierz wszystkie zakończone mecze w lidze
     matches_result = await session.execute(
         select(Match).where(and_(Match.league_id == league_id, Match.is_finished == True))
     )
     matches = matches_result.scalars().all()
     
-    # Utwórz statystyki dla każdej drużyny
+    # Utwórz statystyki dla każdej drużyny (inicjalizuj z zerami)
     standings = []
     for team in teams:
         stats = {
@@ -139,3 +143,91 @@ async def get_league_table(league_id: int, session: AsyncSession = Depends(get_a
         standing.position = i
     
     return standings
+
+
+@router.post("/league/{league_id}/generate-schedule")
+async def generate_league_schedule(league_id: int, session: AsyncSession = Depends(get_async_session)):
+    """Generuje kompletny terminarz dla ligi - każdy z każdym x2 (mecz i rewanż)"""
+    
+    # Sprawdź czy liga istnieje
+    league = await session.get(League, league_id)
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+    
+    # Pobierz wszystkie drużyny w lidze
+    teams_result = await session.execute(select(Team).where(Team.league_id == league_id))
+    teams = teams_result.scalars().all()
+    
+    if len(teams) < 2:
+        raise HTTPException(status_code=400, detail="Liga musi mieć co najmniej 2 drużyny")
+    
+    # Sprawdź czy już są jakieś mecze w lidze
+    existing_matches = await session.execute(select(Match).where(Match.league_id == league_id))
+    if existing_matches.scalars().first():
+        raise HTTPException(status_code=400, detail="Liga ma już utworzony terminarz")
+    
+    teams_list = list(teams)
+    matches_to_create = []
+    round_number = 1
+    
+    # Generowanie terminarza - każdy z każdym
+    # Pierwsza runda: każdy z każdym
+    for i in range(len(teams_list)):
+        for j in range(i + 1, len(teams_list)):
+            home_team = teams_list[i]
+            away_team = teams_list[j]
+            
+            # Mecz podstawowy
+            match_date = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0) + timedelta(weeks=round_number - 1)
+            
+            match_data = {
+                "home_team_id": home_team.id,
+                "away_team_id": away_team.id,
+                "league_id": league_id,
+                "match_date": match_date,
+                "round_number": round_number,
+                "is_finished": False
+            }
+            matches_to_create.append(Match(**match_data))
+            round_number += 1
+    
+    # Druga runda: rewanże (odwrócone gospodarze)
+    for i in range(len(teams_list)):
+        for j in range(i + 1, len(teams_list)):
+            home_team = teams_list[j]  # Odwrócone
+            away_team = teams_list[i]  # Odwrócone
+            
+            # Rewanż
+            match_date = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0) + timedelta(weeks=round_number - 1)
+            
+            match_data = {
+                "home_team_id": home_team.id,
+                "away_team_id": away_team.id,
+                "league_id": league_id,
+                "match_date": match_date,
+                "round_number": round_number,
+                "is_finished": False
+            }
+            matches_to_create.append(Match(**match_data))
+            round_number += 1
+    
+    # Zapisz wszystkie mecze
+    for match in matches_to_create:
+        session.add(match)
+    
+    await session.commit()
+    
+    return {
+        "message": f"Utworzono terminarz dla ligi {league.name}",
+        "total_matches": len(matches_to_create),
+        "total_rounds": round_number - 1
+    }
+
+
+@router.get("/{match_id}", response_model=MatchRead)
+async def get_match(match_id: int, session: AsyncSession = Depends(get_async_session)):
+    """Pobiera szczegóły pojedynczego meczu"""
+    match = await session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    return match

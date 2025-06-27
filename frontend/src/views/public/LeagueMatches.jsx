@@ -4,19 +4,37 @@ import { useParams, Link } from "react-router-dom";
 export default function LeagueMatches() {
   const { leagueId } = useParams();
   const [matches, setMatches] = useState([]);
+  const [teams, setTeams] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/matches/league/${leagueId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMatches(data);
+    // Pobierz mecze
+    const fetchData = async () => {
+      try {
+        // Pobierz drużyny
+        const teamsResponse = await fetch(`/league/${leagueId}/teams`);
+        const teamsData = await teamsResponse.json();
+        
+        // Utwórz mapę ID -> nazwa drużyny
+        const teamsMap = {};
+        teamsData.forEach(team => {
+          teamsMap[team.id] = team.name;
+        });
+        setTeams(teamsMap);
+
+        // Pobierz mecze
+        const matchesResponse = await fetch(`/matches/league/${leagueId}`);
+        const matchesData = await matchesResponse.json();
+        setMatches(matchesData);
+        
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Błąd pobierania meczów:", err);
+      } catch (err) {
+        console.error("Błąd pobierania danych:", err);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, [leagueId]);
 
   if (loading) {
@@ -61,7 +79,7 @@ export default function LeagueMatches() {
                 {matchesByRound[round].map((match) => (
                   <div key={match.id} style={matchStyle}>
                     <div style={{ flex: 1, textAlign: "right", padding: "10px" }}>
-                      <strong>Drużyna gospodarzy (ID: {match.home_team_id})</strong>
+                      <strong>{teams[match.home_team_id] || `Drużyna ${match.home_team_id}`}</strong>
                     </div>
                     
                     <div style={{ padding: "10px", minWidth: "120px", textAlign: "center" }}>
@@ -85,7 +103,7 @@ export default function LeagueMatches() {
                     </div>
                     
                     <div style={{ flex: 1, textAlign: "left", padding: "10px" }}>
-                      <strong>Drużyna gości (ID: {match.away_team_id})</strong>
+                      <strong>{teams[match.away_team_id] || `Drużyna ${match.away_team_id}`}</strong>
                     </div>
                   </div>
                 ))}
