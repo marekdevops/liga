@@ -150,29 +150,39 @@ export default function LeagueMatches() {
       color: "#ffffff", 
       minHeight: "100vh",
       margin: 0,
-      padding: 0
+      padding: 0,
+      width: "100%",
+      display: "block",
+      position: "relative"
     }}>
       {/* Niebieski nagłówek - pełna szerokość ekranu */}
-      <div style={{
-        backgroundColor: "#2196F3",
+      <div className="terminarz-header" style={{
+        backgroundColor: "#2196F3 !important",
         padding: "20px 15px",
         borderBottom: "3px solid #1976D2",
-        boxShadow: "0 3px 6px rgba(0,0,0,0.3)"
+        boxShadow: "0 3px 6px rgba(0,0,0,0.3)",
+        width: "100%",
+        position: "relative",
+        zIndex: 10,
+        display: "block !important"
       }}>
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", width: "100%" }}>
           <h1 style={{ 
-            color: "#ffffff", 
-            margin: "0 0 10px 0",
-            fontSize: "28px",
-            fontWeight: "bold",
-            textShadow: "2px 2px 4px rgba(0,0,0,0.3)"
+            color: "#ffffff !important", 
+            margin: "0 0 10px 0 !important",
+            fontSize: "28px !important",
+            fontWeight: "bold !important",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+            display: "block !important",
+            lineHeight: "1.2 !important"
           }}>
             ⚽ TERMINARZ ROZGRYWEK
           </h1>
           <div style={{
-            fontSize: "16px",
-            color: "#E3F2FD",
-            fontWeight: "500"
+            fontSize: "16px !important",
+            color: "#E3F2FD !important",
+            fontWeight: "500",
+            display: "block !important"
           }}>
             Kolejek: {Object.keys(matchesByRound).length} | Meczów: {matches.length}
           </div>
@@ -342,7 +352,7 @@ export default function LeagueMatches() {
 
             {/* Stopka - rozciągnięta na całą szerokość */}
             <div style={{
-              gridColumn: "1 / -1",
+              width: "100%",
               marginTop: "20px",
               padding: "20px",
               backgroundColor: "#2a2a2a",

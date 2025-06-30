@@ -31,6 +31,13 @@ async def create_team(team: TeamCreate, session: AsyncSession = Depends(get_asyn
     await session.refresh(db_team)
     return db_team
 
+@router.get("/{team_id}", response_model=TeamRead)
+async def get_team(team_id: int, session: AsyncSession = Depends(get_async_session)):
+    team = await session.get(Team, team_id)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return team
+
 @router.get("/{team_id}/players", response_model=list[PlayerRead])
 async def get_team_players(team_id: int, session: AsyncSession = Depends(get_async_session)):
     result = await session.execute(select(Player).where(Player.team_id == team_id))

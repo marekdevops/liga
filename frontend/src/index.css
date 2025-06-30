@@ -34,6 +34,14 @@ h1 {
   line-height: 1.1;
 }
 
+/* Specyficzne style dla nagłówka terminarza */
+.terminarz-header h1 {
+  font-size: 28px !important;
+  line-height: 1.2 !important;
+  color: #ffffff !important;
+  margin: 0 0 10px 0 !important;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

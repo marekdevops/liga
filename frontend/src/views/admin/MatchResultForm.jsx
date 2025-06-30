@@ -5,21 +5,40 @@ export default function MatchResultForm() {
   const { matchId } = useParams();
   const navigate = useNavigate();
   const [match, setMatch] = useState(null);
+  const [teams, setTeams] = useState({});
   const [homeGoals, setHomeGoals] = useState("");
   const [awayGoals, setAwayGoals] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Pobierz szczegóły meczu
+    // Pobierz szczegóły meczu i nazwy drużyn
     const fetchMatchDetails = async () => {
       try {
-        const response = await fetch(`/matches/${matchId}`);
-        if (response.ok) {
-          const matchData = await response.json();
-          setMatch(matchData);
-        } else {
+        // Pobierz mecz
+        const matchResponse = await fetch(`/matches/${matchId}`);
+        if (!matchResponse.ok) {
           throw new Error("Mecz nie znaleziony");
         }
+        const matchData = await matchResponse.json();
+        setMatch(matchData);
+
+        // Pobierz wszystkie drużyny z ligi
+        const teamsResponse = await fetch(`/league/${matchData.league_id}/teams`);
+        if (teamsResponse.ok) {
+          const teamsData = await teamsResponse.json();
+          
+          // Utwórz mapę ID -> nazwa drużyny
+          const teamsMap = {};
+          teamsData.forEach(team => {
+            teamsMap[team.id] = team.name;
+          });
+          setTeams(teamsMap);
+          
+          console.log("Mapa drużyn:", teamsMap);
+          console.log("Drużyna gospodarzy:", teamsMap[matchData.home_team_id]);
+          console.log("Drużyna gości:", teamsMap[matchData.away_team_id]);
+        }
+        
         setLoading(false);
       } catch (err) {
         console.error("Błąd pobierania meczu:", err);
@@ -65,56 +84,141 @@ export default function MatchResultForm() {
   };
 
   if (loading) {
-    return <div>Ładowanie...</div>;
+    return (
+      <div style={{ 
+        padding: "20px", 
+        textAlign: "center",
+        backgroundColor: "#1a1a1a",
+        color: "#ffffff",
+        minHeight: "100vh"
+      }}>
+        Ładowanie szczegółów meczu...
+      </div>
+    );
   }
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pl-PL") + " " + date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+  };
+
   return (
-    <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
-      <h2>Dodaj wynik meczu</h2>
-      <div style={{ marginBottom: "20px", padding: "15px", border: "1px solid #ddd", borderRadius: "8px" }}>
-        <p>Mecz ID: {matchId}</p>
-        <p>Drużyna gospodarzy (ID: {match?.home_team_id}) vs Drużyna gości (ID: {match?.away_team_id})</p>
+    <div style={{ 
+      padding: "20px", 
+      maxWidth: "600px", 
+      margin: "0 auto",
+      backgroundColor: "#1a1a1a",
+      color: "#ffffff",
+      minHeight: "100vh"
+    }}>
+      <h2 style={{ 
+        color: "#ffffff", 
+        textAlign: "center", 
+        marginBottom: "30px",
+        fontSize: "24px"
+      }}>
+        ⚽ Dodaj wynik meczu
+      </h2>
+      
+      {/* Informacje o meczu - bez ID */}
+      <div style={{ 
+        marginBottom: "30px", 
+        padding: "20px", 
+        border: "2px solid #4CAF50", 
+        borderRadius: "10px",
+        backgroundColor: "#2a2a2a",
+        textAlign: "center"
+      }}>
+        <div style={{ 
+          fontSize: "20px", 
+          fontWeight: "bold", 
+          marginBottom: "10px",
+          color: "#4CAF50"
+        }}>
+          {teams[match?.home_team_id] || 'Drużyna gospodarzy'} 
+          <span style={{ color: "#ffffff", margin: "0 15px" }}>VS</span>
+          {teams[match?.away_team_id] || 'Drużyna gości'}
+        </div>
+        <div style={{ 
+          fontSize: "14px", 
+          color: "#cccccc",
+          marginTop: "8px"
+        }}>
+          📅 {formatDate(match?.match_date)}
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <div style={{ flex: 1 }}>
-            <label>Bramki gospodarzy:</label>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "20px",
+          backgroundColor: "#2a2a2a",
+          padding: "20px",
+          borderRadius: "10px",
+          border: "1px solid #555"
+        }}>
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <label style={{ 
+              display: "block", 
+              marginBottom: "8px", 
+              fontWeight: "bold",
+              color: "#4CAF50"
+            }}>
+              {teams[match?.home_team_id] || 'Gospodarze'}
+            </label>
             <input
               type="number"
               value={homeGoals}
               onChange={(e) => setHomeGoals(e.target.value)}
               min="0"
+              max="20"
               required
-              style={inputStyle}
+              style={{...inputStyle, textAlign: "center", fontSize: "18px"}}
+              placeholder="0"
             />
           </div>
 
-          <div style={{ fontSize: "24px", fontWeight: "bold" }}>:</div>
+          <div style={{ 
+            fontSize: "32px", 
+            fontWeight: "bold",
+            color: "#ffffff" 
+          }}>
+            :
+          </div>
 
-          <div style={{ flex: 1 }}>
-            <label>Bramki gości:</label>
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <label style={{ 
+              display: "block", 
+              marginBottom: "8px", 
+              fontWeight: "bold",
+              color: "#FF9800"
+            }}>
+              {teams[match?.away_team_id] || 'Goście'}
+            </label>
             <input
               type="number"
               value={awayGoals}
               onChange={(e) => setAwayGoals(e.target.value)}
               min="0"
+              max="20"
               required
-              style={inputStyle}
+              style={{...inputStyle, textAlign: "center", fontSize: "18px"}}
+              placeholder="0"
             />
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
           <button type="submit" style={buttonStyle}>
-            Zapisz wynik
+            ✅ Zapisz wynik
           </button>
           <button 
             type="button" 
             onClick={() => navigate(-1)}
             style={{ ...buttonStyle, backgroundColor: "#6c757d" }}
           >
-            Anuluj
+            ❌ Anuluj
           </button>
         </div>
       </form>
@@ -123,19 +227,24 @@ export default function MatchResultForm() {
 }
 
 const inputStyle = {
-  padding: "8px",
-  border: "1px solid #ddd",
-  borderRadius: "4px",
-  fontSize: "14px",
-  width: "100%"
+  padding: "12px",
+  border: "2px solid #555",
+  borderRadius: "8px",
+  fontSize: "18px",
+  width: "100%",
+  backgroundColor: "#333",
+  color: "#ffffff",
+  fontWeight: "bold"
 };
 
 const buttonStyle = {
-  padding: "10px 20px",
+  padding: "12px 30px",
   backgroundColor: "#4caf50",
   color: "white",
   border: "none",
-  borderRadius: "4px",
+  borderRadius: "8px",
   cursor: "pointer",
-  fontSize: "16px"
+  fontSize: "16px",
+  fontWeight: "bold",
+  transition: "background-color 0.3s"
 };
