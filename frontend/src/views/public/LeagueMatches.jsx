@@ -78,9 +78,7 @@ export default function LeagueMatches() {
       color: "#ffffff", 
       minHeight: "100vh",
       width: "100%",
-      overflow: "visible",
-      height: "auto",
-      position: "relative"
+      overflow: "visible"
     }}>
       <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>
         Terminarz rozgrywek (Kolejek: {Object.keys(matchesByRound).length}, Meczów: {matches.length})
