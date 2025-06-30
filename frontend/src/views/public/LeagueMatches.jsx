@@ -46,7 +46,10 @@ export default function LeagueMatches() {
         color: "#ffffff", 
         minHeight: "100vh",
         textAlign: "center",
-        fontSize: "18px"
+        fontSize: "16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
       }}>
         Ładowanie terminarza...
       </div>
@@ -73,21 +76,26 @@ export default function LeagueMatches() {
 
   const MatchCard = ({ match }) => (
     <div style={matchStyle}>
-      <div style={{ flex: 1, textAlign: "right", padding: "10px" }}>
-        <strong style={{ color: "#ffffff", fontSize: "16px" }}>
+      <div style={{ flex: 1, textAlign: "right", padding: "8px", minWidth: "0" }}>
+        <strong style={{ 
+          color: "#ffffff", 
+          fontSize: "14px",
+          wordBreak: "break-word",
+          display: "block"
+        }}>
           {teams[match.home_team_id] || `Drużyna ${match.home_team_id}`}
         </strong>
       </div>
       
-      <div style={{ padding: "10px", minWidth: "150px", textAlign: "center" }}>
+      <div style={{ padding: "8px", minWidth: "120px", textAlign: "center", flexShrink: 0 }}>
         {match.is_finished ? (
           <div style={{ 
-            fontSize: "28px", 
+            fontSize: "20px", 
             fontWeight: "bold", 
             color: "#4CAF50",
-            padding: "10px",
+            padding: "6px",
             border: "2px solid #4CAF50",
-            borderRadius: "8px",
+            borderRadius: "6px",
             backgroundColor: "rgba(76, 175, 80, 0.1)"
           }}>
             {match.home_goals} : {match.away_goals}
@@ -95,19 +103,19 @@ export default function LeagueMatches() {
         ) : (
           <div>
             <div style={{ 
-              fontSize: "14px", 
+              fontSize: "11px", 
               color: "#cccccc",
-              marginBottom: "8px"
+              marginBottom: "6px"
             }}>
               {formatDate(match.match_date)}
             </div>
             <Link 
               to={`/admin/matches/${match.id}/result`}
               style={{ 
-                fontSize: "13px", 
+                fontSize: "11px", 
                 color: "#FF9800", 
                 textDecoration: "none",
-                padding: "6px 10px",
+                padding: "4px 8px",
                 border: "1px solid #FF9800",
                 borderRadius: "4px",
                 backgroundColor: "rgba(255, 152, 0, 0.1)",
@@ -120,8 +128,13 @@ export default function LeagueMatches() {
         )}
       </div>
       
-      <div style={{ flex: 1, textAlign: "left", padding: "10px" }}>
-        <strong style={{ color: "#ffffff", fontSize: "16px" }}>
+      <div style={{ flex: 1, textAlign: "left", padding: "8px", minWidth: "0" }}>
+        <strong style={{ 
+          color: "#ffffff", 
+          fontSize: "14px",
+          wordBreak: "break-word",
+          display: "block"
+        }}>
           {teams[match.away_team_id] || `Drużyna ${match.away_team_id}`}
         </strong>
       </div>
@@ -133,21 +146,22 @@ export default function LeagueMatches() {
       backgroundColor: "#1a1a1a", 
       color: "#ffffff", 
       minHeight: "100vh",
-      width: "100%"
+      width: "100%",
+      overflow: "hidden"
     }}>
       {/* Niebieski nagłówek */}
       <div style={{
         backgroundColor: "#2196F3",
-        padding: "30px 20px",
+        padding: "15px 10px",
         marginBottom: "0",
         borderBottom: "4px solid #1976D2",
         boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
       }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "100%", margin: "0 auto", padding: "0 10px" }}>
           <h1 style={{ 
             color: "#ffffff", 
-            margin: "0 0 10px 0",
-            fontSize: "36px",
+            margin: "0 0 8px 0",
+            fontSize: "24px",
             fontWeight: "bold",
             textAlign: "center",
             textShadow: "2px 2px 4px rgba(0,0,0,0.3)"
@@ -156,7 +170,7 @@ export default function LeagueMatches() {
           </h1>
           <div style={{
             textAlign: "center",
-            fontSize: "18px",
+            fontSize: "14px",
             color: "#E3F2FD",
             fontWeight: "500"
           }}>
@@ -167,24 +181,28 @@ export default function LeagueMatches() {
 
       {/* Główny kontener */}
       <div style={{ 
-        padding: "30px 20px",
-        maxWidth: "1200px",
-        margin: "0 auto"
+        padding: "15px 10px",
+        maxWidth: "100%",
+        margin: "0 auto",
+        overflow: "hidden"
       }}>
         
         {/* Przyciski nawigacyjne */}
-        <div style={{ marginBottom: "30px", display: "flex", gap: "15px", flexWrap: "wrap" }}>
+        <div style={{ marginBottom: "15px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
           <Link 
             to="/"
             style={{ 
               color: "#FF9800",
               textDecoration: "none",
-              padding: "12px 20px",
+              padding: "8px 12px",
               border: "2px solid #FF9800",
-              borderRadius: "8px",
+              borderRadius: "6px",
               backgroundColor: "rgba(255, 152, 0, 0.1)",
               fontWeight: "bold",
-              fontSize: "16px"
+              fontSize: "14px",
+              flex: "1",
+              textAlign: "center",
+              minWidth: "140px"
             }}
           >
             🏠 Główne menu
@@ -194,12 +212,15 @@ export default function LeagueMatches() {
             style={{ 
               color: "#4CAF50",
               textDecoration: "none",
-              padding: "12px 20px",
+              padding: "8px 12px",
               border: "2px solid #4CAF50",
-              borderRadius: "8px",
+              borderRadius: "6px",
               backgroundColor: "rgba(76, 175, 80, 0.1)",
               fontWeight: "bold",
-              fontSize: "16px"
+              fontSize: "14px",
+              flex: "1",
+              textAlign: "center",
+              minWidth: "140px"
             }}
           >
             📊 Powrót do tabeli
@@ -214,21 +235,21 @@ export default function LeagueMatches() {
           <>
             {/* SEKCJA: RUNDA ZASADNICZA */}
             <div style={{
-              marginBottom: "50px",
+              marginBottom: "20px",
               backgroundColor: "#1B5E20",
-              borderRadius: "15px",
-              padding: "30px",
-              border: "3px solid #4CAF50",
-              boxShadow: "0 6px 12px rgba(0,0,0,0.4)"
+              borderRadius: "10px",
+              padding: "15px",
+              border: "2px solid #4CAF50",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
             }}>
               <h2 style={{
                 color: "#A5D6A7",
                 textAlign: "center",
-                fontSize: "32px",
+                fontSize: "20px",
                 fontWeight: "bold",
-                marginBottom: "30px",
-                borderBottom: "3px solid #4CAF50",
-                paddingBottom: "15px"
+                marginBottom: "15px",
+                borderBottom: "2px solid #4CAF50",
+                paddingBottom: "8px"
               }}>
                 🏆 RUNDA ZASADNICZA (Kolejki 1-3)
               </h2>
@@ -237,22 +258,22 @@ export default function LeagueMatches() {
                 .filter(round => parseInt(round) <= 3)
                 .sort((a, b) => parseInt(a) - parseInt(b))
                 .map((round) => (
-                  <div key={round} style={{ marginBottom: "30px" }}>
+                  <div key={round} style={{ marginBottom: "15px" }}>
                     <h3 style={{ 
                       color: "#C8E6C9", 
-                      marginBottom: "20px",
-                      fontSize: "24px",
+                      marginBottom: "10px",
+                      fontSize: "16px",
                       fontWeight: "bold",
-                      paddingLeft: "10px",
-                      borderLeft: "5px solid #4CAF50"
+                      paddingLeft: "8px",
+                      borderLeft: "3px solid #4CAF50"
                     }}>
                       ⚽ Kolejka {round} ({matchesByRound[round].length} meczów)
                     </h3>
                     <div style={{ 
                       backgroundColor: "#2E7D32",
-                      borderRadius: "10px", 
-                      padding: "20px",
-                      border: "2px solid #4CAF50"
+                      borderRadius: "8px", 
+                      padding: "10px",
+                      border: "1px solid #4CAF50"
                     }}>
                       {matchesByRound[round].map((match) => (
                         <MatchCard key={match.id} match={match} />
@@ -264,21 +285,21 @@ export default function LeagueMatches() {
 
             {/* SEKCJA: REWANŻE */}
             <div style={{
-              marginBottom: "50px",
+              marginBottom: "20px",
               backgroundColor: "#E65100",
-              borderRadius: "15px",
-              padding: "30px",
-              border: "3px solid #FF9800",
-              boxShadow: "0 6px 12px rgba(0,0,0,0.4)"
+              borderRadius: "10px",
+              padding: "15px",
+              border: "2px solid #FF9800",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
             }}>
               <h2 style={{
                 color: "#FFE0B2",
                 textAlign: "center",
-                fontSize: "32px",
+                fontSize: "20px",
                 fontWeight: "bold",
-                marginBottom: "30px",
-                borderBottom: "3px solid #FF9800",
-                paddingBottom: "15px"
+                marginBottom: "15px",
+                borderBottom: "2px solid #FF9800",
+                paddingBottom: "8px"
               }}>
                 🔄 REWANŻE (Kolejki 4-6)
               </h2>
@@ -287,22 +308,22 @@ export default function LeagueMatches() {
                 .filter(round => parseInt(round) > 3)
                 .sort((a, b) => parseInt(a) - parseInt(b))
                 .map((round) => (
-                  <div key={round} style={{ marginBottom: "30px" }}>
+                  <div key={round} style={{ marginBottom: "15px" }}>
                     <h3 style={{ 
                       color: "#FFF3E0", 
-                      marginBottom: "20px",
-                      fontSize: "24px",
+                      marginBottom: "10px",
+                      fontSize: "16px",
                       fontWeight: "bold",
-                      paddingLeft: "10px",
-                      borderLeft: "5px solid #FF9800"
+                      paddingLeft: "8px",
+                      borderLeft: "3px solid #FF9800"
                     }}>
                       🔄 Kolejka {round} ({matchesByRound[round].length} meczów) - Rewanże
                     </h3>
                     <div style={{ 
                       backgroundColor: "#F57C00",
-                      borderRadius: "10px", 
-                      padding: "20px",
-                      border: "2px solid #FF9800"
+                      borderRadius: "8px", 
+                      padding: "10px",
+                      border: "1px solid #FF9800"
                     }}>
                       {matchesByRound[round].map((match) => (
                         <MatchCard key={match.id} match={match} />
@@ -314,14 +335,14 @@ export default function LeagueMatches() {
 
             {/* Koniec terminarza */}
             <div style={{
-              marginTop: "40px",
-              padding: "20px",
+              marginTop: "20px",
+              padding: "15px",
               backgroundColor: "#2a2a2a",
-              borderRadius: "10px",
+              borderRadius: "8px",
               textAlign: "center",
-              border: "2px dashed #666"
+              border: "1px dashed #666"
             }}>
-              <h4 style={{ color: "#888", margin: 0, fontSize: "18px" }}>
+              <h4 style={{ color: "#888", margin: 0, fontSize: "14px" }}>
                 🏁 Koniec terminarza - Łącznie {matches.length} meczów w {Object.keys(matchesByRound).length} kolejkach
               </h4>
             </div>
@@ -336,9 +357,12 @@ const matchStyle = {
   display: "flex",
   alignItems: "center",
   borderBottom: "1px solid #444",
-  padding: "15px 0",
+  padding: "8px 0",
   backgroundColor: "#333333",
-  margin: "8px 0",
-  borderRadius: "6px",
-  border: "1px solid #555"
+  margin: "4px 0",
+  borderRadius: "4px",
+  border: "1px solid #555",
+  minHeight: "auto",
+  width: "100%",
+  boxSizing: "border-box"
 };
