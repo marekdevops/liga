@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import TopBar from "../../components/TopBar";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function LeagueMatches() {
   const { leagueId } = useParams();
+  const { isAuthenticated } = useAuth();
   const [matches, setMatches] = useState([]);
   const [teams, setTeams] = useState({});
   const [loading, setLoading] = useState(true);
@@ -76,19 +79,21 @@ export default function LeagueMatches() {
 
   const MatchCard = ({ match }) => (
     <div style={matchStyle}>
-      <div style={{ flex: 1, textAlign: "right", padding: "10px", minWidth: "0" }}>
-        <strong style={{ 
+      <div style={{ flex: 1, textAlign: "right", padding: "10px", minWidth: "0", overflow: "hidden" }}>
+        <strong className="match-team-name" style={{ 
           color: "#ffffff", 
           fontSize: "14px",
-          wordBreak: "break-word",
           display: "block",
-          lineHeight: "1.4"
+          lineHeight: "1.4",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis"
         }}>
           {teams[match.home_team_id] || `Drużyna ${match.home_team_id}`}
         </strong>
       </div>
       
-      <div style={{ padding: "10px", minWidth: "140px", textAlign: "center", flexShrink: 0 }}>
+      <div className="match-center-info" style={{ padding: "10px", minWidth: "140px", textAlign: "center", flexShrink: 0 }}>
         {match.is_finished ? (
           <div style={{ 
             fontSize: "22px", 
@@ -111,32 +116,36 @@ export default function LeagueMatches() {
             }}>
               {formatDate(match.match_date)}
             </div>
-            <Link 
-              to={`/admin/matches/${match.id}/result`}
-              style={{ 
-                fontSize: "12px", 
-                color: "#FF9800", 
-                textDecoration: "none",
-                padding: "6px 10px",
-                border: "1px solid #FF9800",
-                borderRadius: "4px",
-                backgroundColor: "rgba(255, 152, 0, 0.1)",
-                display: "inline-block"
-              }}
-            >
-              ⚽ Dodaj wynik
-            </Link>
+            {isAuthenticated && (
+              <Link 
+                to={`/admin/matches/${match.id}/result`}
+                style={{ 
+                  fontSize: "12px", 
+                  color: "#FF9800", 
+                  textDecoration: "none",
+                  padding: "6px 10px",
+                  border: "1px solid #FF9800",
+                  borderRadius: "4px",
+                  backgroundColor: "rgba(255, 152, 0, 0.1)",
+                  display: "inline-block"
+                }}
+              >
+                ⚽ Dodaj wynik
+              </Link>
+            )}
           </div>
         )}
       </div>
       
-      <div style={{ flex: 1, textAlign: "left", padding: "10px", minWidth: "0" }}>
-        <strong style={{ 
+      <div style={{ flex: 1, textAlign: "left", padding: "10px", minWidth: "0", overflow: "hidden" }}>
+        <strong className="match-team-name" style={{ 
           color: "#ffffff", 
           fontSize: "14px",
-          wordBreak: "break-word",
           display: "block",
-          lineHeight: "1.4"
+          lineHeight: "1.4",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis"
         }}>
           {teams[match.away_team_id] || `Drużyna ${match.away_team_id}`}
         </strong>
@@ -153,8 +162,10 @@ export default function LeagueMatches() {
       padding: 0,
       width: "100%",
       display: "block",
-      position: "relative"
+      position: "relative",
+      paddingTop: "70px" // miejsce na TopBar
     }}>
+      <TopBar />
       {/* Niebieski nagłówek - pełna szerokość ekranu */}
       <div className="terminarz-header" style={{
         backgroundColor: "#2196F3 !important",
@@ -380,7 +391,9 @@ const matchStyle = {
   margin: "6px 0",
   borderRadius: "6px",
   border: "1px solid #555",
-  minHeight: "auto",
+  minHeight: "60px",
   width: "100%",
-  boxSizing: "border-box"
+  boxSizing: "border-box",
+  maxWidth: "100%",
+  overflow: "hidden"
 };

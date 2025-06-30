@@ -282,3 +282,34 @@ html, body, #root {
   background-color: #2d2d2d;
   border-radius: 8px;
 }
+
+/* Style responsywne dla terminarza meczów */
+@media (max-width: 480px) {
+  .match-team-name {
+    font-size: 12px !important;
+    max-width: 100px;
+  }
+  
+  .match-center-info {
+    min-width: 120px !important;
+  }
+  
+  .terminarz-header h1 {
+    font-size: 22px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .match-team-name {
+    font-size: 11px !important;
+    max-width: 80px;
+  }
+  
+  .match-center-info {
+    min-width: 100px !important;
+  }
+  
+  .terminarz-header h1 {
+    font-size: 20px !important;
+  }
+}

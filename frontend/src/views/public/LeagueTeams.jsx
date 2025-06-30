@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import TopBar from "../../components/TopBar";
 
 export default function LeagueTeams() {
   const { leagueId } = useParams();
@@ -17,8 +18,10 @@ export default function LeagueTeams() {
       padding: "20px", 
       backgroundColor: "#1a1a1a", 
       color: "#ffffff", 
-      minHeight: "100vh" 
+      minHeight: "100vh",
+      paddingTop: "90px" // miejsce na TopBar
     }}>
+      <TopBar />
       <h2 style={{ color: "#4CAF50", marginBottom: "20px" }}>
         Drużyny w lidze ID: {leagueId}
       </h2>

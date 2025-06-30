@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import TopBar from "../../components/TopBar";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function LeagueDetails() {
   const { leagueId } = useParams();
+  const { isAuthenticated } = useAuth();
   const [league, setLeague] = useState(null);
   const [standings, setStandings] = useState([]);
   const [topPlayers, setTopPlayers] = useState(null);
@@ -146,8 +149,10 @@ export default function LeagueDetails() {
       padding: "20px", 
       backgroundColor: "#1e1e1e", 
       minHeight: "100vh",
-      color: "#e0e0e0"
+      color: "#e0e0e0",
+      paddingTop: "90px" // miejsce na TopBar
     }}>
+      <TopBar />
       <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>
         📊 {league?.name || `Liga ID: ${leagueId}`} - Tabela
       </h2>
@@ -166,35 +171,39 @@ export default function LeagueDetails() {
         >
           📅 Zobacz terminarz
         </Link>
-        <Link 
-          to={`/admin/matches/new?league=${leagueId}`}
-          style={{ 
-            marginRight: "10px",
-            color: "#4caf50", 
-            textDecoration: "none",
-            padding: "8px 12px",
-            border: "1px solid #4caf50",
-            borderRadius: "4px",
-            display: "inline-block"
-          }}
-        >
-          ➕ Dodaj mecz
-        </Link>
-        <button
-          onClick={handleGenerateSchedule}
-          style={{ 
-            color: "#ff9800", 
-            backgroundColor: "transparent",
-            textDecoration: "none",
-            padding: "8px 12px",
-            border: "1px solid #ff9800",
-            borderRadius: "4px",
-            display: "inline-block",
-            cursor: "pointer"
-          }}
-        >
-          ⚡ Generuj terminarz
-        </button>
+        {isAuthenticated && (
+          <>
+            <Link 
+              to={`/admin/matches/new?league=${leagueId}`}
+              style={{ 
+                marginRight: "10px",
+                color: "#4caf50", 
+                textDecoration: "none",
+                padding: "8px 12px",
+                border: "1px solid #4caf50",
+                borderRadius: "4px",
+                display: "inline-block"
+              }}
+            >
+              ➕ Dodaj mecz
+            </Link>
+            <button
+              onClick={handleGenerateSchedule}
+              style={{ 
+                color: "#ff9800", 
+                backgroundColor: "transparent",
+                textDecoration: "none",
+                padding: "8px 12px",
+                border: "1px solid #ff9800",
+                borderRadius: "4px",
+                display: "inline-block",
+                cursor: "pointer"
+              }}
+            >
+              ⚡ Generuj terminarz
+            </button>
+          </>
+        )}
       </div>
       
       {standings.length === 0 ? (

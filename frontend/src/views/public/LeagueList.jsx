@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import TopBar from "../../components/TopBar";
 
 export default function LeagueList() {
   const [leagues, setLeagues] = useState([]);
@@ -19,8 +20,10 @@ export default function LeagueList() {
       padding: "20px", 
       backgroundColor: "#1a1a1a", 
       color: "#ffffff", 
-      minHeight: "100vh" 
+      minHeight: "100vh",
+      paddingTop: "90px" // miejsce na TopBar
     }}>
+      <TopBar />
       <h2 style={{ color: "#4CAF50", marginBottom: "20px" }}>Dostępne ligi</h2>
       {leagues.length === 0 && (
         <p style={{ color: "#cccccc", fontSize: "16px" }}>Brak lig do wyświetlenia.</p>
