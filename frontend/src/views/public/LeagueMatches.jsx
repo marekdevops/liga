@@ -63,6 +63,9 @@ export default function LeagueMatches() {
     return acc;
   }, {});
 
+  console.log("matchesByRound:", matchesByRound);
+  console.log("Liczba kolejek:", Object.keys(matchesByRound).length);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("pl-PL") + " " + date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
@@ -73,9 +76,15 @@ export default function LeagueMatches() {
       padding: "20px", 
       backgroundColor: "#1a1a1a", 
       color: "#ffffff", 
-      minHeight: "100vh" 
+      minHeight: "100vh",
+      width: "100%",
+      overflow: "visible",
+      height: "auto",
+      position: "relative"
     }}>
-      <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>Terminarz rozgrywek</h2>
+      <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>
+        Terminarz rozgrywek (Kolejek: {Object.keys(matchesByRound).length}, Meczów: {matches.length})
+      </h2>
       <div style={{ marginBottom: "20px", display: "flex", gap: "15px", flexWrap: "wrap" }}>
         <Link 
           to="/"
@@ -121,18 +130,51 @@ export default function LeagueMatches() {
       {Object.keys(matchesByRound).length === 0 ? (
         <p style={{ color: "#cccccc", fontSize: "16px" }}>Brak meczów w terminarzu.</p>
       ) : (
-        Object.keys(matchesByRound)
-          .sort((a, b) => parseInt(a) - parseInt(b))
-          .map((round) => (
-            <div key={round} style={{ marginBottom: "30px" }}>
-              <h3 style={{ 
-                color: "#4CAF50", 
-                marginBottom: "15px",
-                borderBottom: "2px solid #4CAF50",
-                paddingBottom: "8px"
-              }}>
-                Kolejka {round}
-              </h3>
+        <>
+          {/* Nawigacja do kolejek */}
+          <div style={{ 
+            marginBottom: "20px", 
+            padding: "10px", 
+            backgroundColor: "#2a2a2a", 
+            borderRadius: "8px",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px"
+          }}>
+            <span style={{ color: "#cccccc" }}>Przejdź do kolejki:</span>
+            {Object.keys(matchesByRound)
+              .sort((a, b) => parseInt(a) - parseInt(b))
+              .map((round) => (
+                <a
+                  key={round}
+                  href={`#round-${round}`}
+                  style={{
+                    color: "#4CAF50",
+                    textDecoration: "none",
+                    padding: "4px 8px",
+                    border: "1px solid #4CAF50",
+                    borderRadius: "4px",
+                    fontSize: "14px"
+                  }}
+                >
+                  {round}
+                </a>
+              ))}
+          </div>
+
+          {/* Kolejki */}
+          {Object.keys(matchesByRound)
+            .sort((a, b) => parseInt(a) - parseInt(b))
+            .map((round) => (
+              <div key={round} id={`round-${round}`} style={{ marginBottom: "30px" }}>
+                <h3 style={{ 
+                  color: "#4CAF50", 
+                  marginBottom: "15px",
+                  borderBottom: "2px solid #4CAF50",
+                  paddingBottom: "8px"
+                }}>
+                  Kolejka {round} ({matchesByRound[round].length} meczów)
+                </h3>
               <div style={{ 
                 border: "1px solid #444", 
                 borderRadius: "8px", 
@@ -197,7 +239,8 @@ export default function LeagueMatches() {
                 ))}
               </div>
             </div>
-          ))
+          ))}
+        </>
       )}
     </div>
   );
