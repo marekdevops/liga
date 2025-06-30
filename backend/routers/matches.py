@@ -146,6 +146,30 @@ async def get_league_table(league_id: int, session: AsyncSession = Depends(get_a
     return standings
 
 
+@router.delete("/league/{league_id}/clear-schedule")
+async def clear_league_schedule(league_id: int, session: AsyncSession = Depends(get_async_session)):
+    """Usuwa wszystkie mecze z ligi (do testowania)"""
+    
+    # Sprawdź czy liga istnieje
+    league = await session.get(League, league_id)
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+    
+    # Usuń wszystkie mecze z ligi
+    result = await session.execute(select(Match).where(Match.league_id == league_id))
+    matches = result.scalars().all()
+    
+    for match in matches:
+        await session.delete(match)
+    
+    await session.commit()
+    
+    return {
+        "message": f"Usunięto {len(matches)} meczów z ligi {league.name}",
+        "deleted_matches": len(matches)
+    }
+
+
 @router.post("/league/{league_id}/generate-schedule")
 async def generate_league_schedule(league_id: int, session: AsyncSession = Depends(get_async_session)):
     """Generuje kompletny terminarz dla ligi - każdy z każdym x2 (mecz i rewanż)"""
@@ -168,49 +192,87 @@ async def generate_league_schedule(league_id: int, session: AsyncSession = Depen
         raise HTTPException(status_code=400, detail="Liga ma już utworzony terminarz")
     
     teams_list = list(teams)
+    n_teams = len(teams_list)
+    
+    # Jeśli nieparzysta liczba drużyn, dodaj "bye" (fantom)
+    if n_teams % 2 == 1:
+        teams_list.append(None)  # Fantom drużyna
+        n_teams += 1
+    
     matches_to_create = []
-    round_number = 1
     
-    # Generowanie terminarza - każdy z każdym
-    # Pierwsza runda: każdy z każdym
-    for i in range(len(teams_list)):
-        for j in range(i + 1, len(teams_list)):
-            home_team = teams_list[i]
-            away_team = teams_list[j]
+    # Algorytm round-robin - każdy z każdym (poprawiony)
+    def generate_round_robin(teams, is_return=False):
+        n = len(teams)
+        rounds = []
+        
+        # Kopia listy drużyn do rotacji
+        teams_copy = teams[:]
+        
+        for round_num in range(n - 1):
+            round_matches = []
             
-            # Mecz podstawowy
-            match_date = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0) + timedelta(weeks=round_number - 1)
+            # W każdej kolejce każda drużyna gra jeden mecz
+            for i in range(n // 2):
+                home_idx = i
+                away_idx = n - 1 - i
+                
+                home_team = teams_copy[home_idx]
+                away_team = teams_copy[away_idx]
+                
+                # Pomiń mecze z fantomem
+                if home_team is None or away_team is None:
+                    continue
+                
+                # W rewanżach odwróć gospodarzy
+                if is_return:
+                    home_team, away_team = away_team, home_team
+                
+                round_matches.append((home_team, away_team))
+            
+            if round_matches:  # Dodaj tylko niepuste kolejki
+                rounds.append(round_matches)
+            
+            # Rotacja drużyn (pierwszy zostaje na miejscu, reszta rotuje)
+            teams_copy = [teams_copy[0]] + [teams_copy[-1]] + teams_copy[1:-1]
+        
+        return rounds
+    
+    # Generuj pierwszą rundę (każdy z każdym)
+    first_round_schedule = generate_round_robin(teams_list[:])
+    
+    # Generuj drugą rundę (rewanże)
+    second_round_schedule = generate_round_robin(teams_list[:], True)
+    
+    # Kombinuj obie rundy
+    all_rounds = first_round_schedule + second_round_schedule
+    
+    # Utwórz mecze z prawidłowymi datami
+    base_date = datetime.now().replace(hour=19, minute=0, second=0, microsecond=0)
+    
+    round_counter = 1
+    
+    for round_idx, round_matches in enumerate(all_rounds):
+        # Data kolejki (co tydzień)
+        round_date = base_date + timedelta(weeks=round_idx)
+        
+        for match_idx, (home_team, away_team) in enumerate(round_matches):
+            # Czas meczu (co godzinę w ramach kolejki: 19:00, 20:00, 21:00...)
+            match_time = round_date + timedelta(hours=match_idx)
             
             match_data = {
                 "home_team_id": home_team.id,
                 "away_team_id": away_team.id,
                 "league_id": league_id,
-                "match_date": match_date,
-                "round_number": round_number,
+                "match_date": match_time,
+                "round_number": round_counter,
                 "is_finished": False
             }
             matches_to_create.append(Match(**match_data))
-            round_number += 1
-    
-    # Druga runda: rewanże (odwrócone gospodarze)
-    for i in range(len(teams_list)):
-        for j in range(i + 1, len(teams_list)):
-            home_team = teams_list[j]  # Odwrócone
-            away_team = teams_list[i]  # Odwrócone
-            
-            # Rewanż
-            match_date = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0) + timedelta(weeks=round_number - 1)
-            
-            match_data = {
-                "home_team_id": home_team.id,
-                "away_team_id": away_team.id,
-                "league_id": league_id,
-                "match_date": match_date,
-                "round_number": round_number,
-                "is_finished": False
-            }
-            matches_to_create.append(Match(**match_data))
-            round_number += 1
+        
+        # Zwiększ numer kolejki tylko jeśli były mecze w tej kolejce
+        if round_matches:
+            round_counter += 1
     
     # Zapisz wszystkie mecze
     for match in matches_to_create:
@@ -221,7 +283,7 @@ async def generate_league_schedule(league_id: int, session: AsyncSession = Depen
     return {
         "message": f"Utworzono terminarz dla ligi {league.name}",
         "total_matches": len(matches_to_create),
-        "total_rounds": round_number - 1
+        "total_rounds": round_counter - 1
     }
 
 

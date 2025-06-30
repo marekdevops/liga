@@ -23,8 +23,10 @@ export default function LeagueMatches() {
         setTeams(teamsMap);
 
         // Pobierz mecze
-        const matchesResponse = await fetch(`/matches/league/${leagueId}`);
+        const matchesResponse = await fetch(`/matches/league/${leagueId}?_t=${Date.now()}`);
         const matchesData = await matchesResponse.json();
+        console.log("Pobrano mecze:", matchesData.length, "mecze");
+        console.log("Kolejki:", [...new Set(matchesData.map(m => m.round_number))].sort());
         setMatches(matchesData);
         
         setLoading(false);
@@ -74,11 +76,23 @@ export default function LeagueMatches() {
       minHeight: "100vh" 
     }}>
       <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>Terminarz rozgrywek</h2>
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "20px", display: "flex", gap: "15px", flexWrap: "wrap" }}>
+        <Link 
+          to="/"
+          style={{ 
+            color: "#FF9800",
+            textDecoration: "none",
+            padding: "8px 12px",
+            border: "1px solid #FF9800",
+            borderRadius: "4px",
+            backgroundColor: "rgba(255, 152, 0, 0.1)"
+          }}
+        >
+          🏠 Główne menu
+        </Link>
         <Link 
           to={`/league/${leagueId}`} 
           style={{ 
-            marginRight: "15px",
             color: "#4CAF50",
             textDecoration: "none",
             padding: "8px 12px",
