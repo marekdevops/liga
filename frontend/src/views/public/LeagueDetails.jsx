@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 export default function LeagueDetails() {
   const { leagueId } = useParams();
   const [standings, setStandings] = useState([]);
+  const [topPlayers, setTopPlayers] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const handleGenerateSchedule = async () => {
@@ -31,16 +32,29 @@ export default function LeagueDetails() {
   };
 
   useEffect(() => {
-    fetch(`/matches/league/${leagueId}/table`)
-      .then((res) => res.json())
-      .then((data) => {
-        setStandings(data);
+    const fetchData = async () => {
+      try {
+        // Pobierz tabelę ligi
+        const standingsResponse = await fetch(`/matches/league/${leagueId}/table`);
+        if (standingsResponse.ok) {
+          const standingsData = await standingsResponse.json();
+          setStandings(standingsData);
+        }
+
+        // Pobierz statystyki indywidualne
+        const playersResponse = await fetch(`/matches/league/${leagueId}/top-players`);
+        if (playersResponse.ok) {
+          const playersData = await playersResponse.json();
+          setTopPlayers(playersData);
+        }
+      } catch (err) {
+        console.error("Błąd pobierania danych:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Błąd pobierania tabeli:", err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, [leagueId]);
 
   if (loading) {
@@ -152,6 +166,154 @@ export default function LeagueDetails() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* Statystyki indywidualne */}
+      {topPlayers && (topPlayers.top_scorers.length > 0 || topPlayers.top_assists.length > 0) && (
+        <div style={{ marginTop: "40px" }}>
+          <h3 style={{ color: "#ffffff", marginBottom: "30px", textAlign: "center" }}>
+            📊 Statystyki indywidualne
+          </h3>
+          
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "1fr 1fr", 
+            gap: "30px",
+            '@media (max-width: 768px)': {
+              gridTemplateColumns: "1fr"
+            }
+          }}>
+            {/* Top strzelcy */}
+            <div>
+              <h4 style={{ 
+                color: "#4caf50", 
+                marginBottom: "15px", 
+                textAlign: "center",
+                backgroundColor: "#2a2a2a",
+                padding: "10px",
+                borderRadius: "8px"
+              }}>
+                ⚽ Top 5 Strzelców
+              </h4>
+              
+              {topPlayers.top_scorers.length === 0 ? (
+                <div style={{ 
+                  textAlign: "center", 
+                  color: "#aaa", 
+                  fontStyle: "italic",
+                  padding: "20px",
+                  backgroundColor: "#2a2a2a",
+                  borderRadius: "8px"
+                }}>
+                  Brak danych o bramkach
+                </div>
+              ) : (
+                <table style={{ 
+                  width: "100%", 
+                  borderCollapse: "collapse", 
+                  backgroundColor: "#2a2a2a", 
+                  borderRadius: "8px",
+                  overflow: "hidden"
+                }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "#4caf50" }}>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#4caf50" }}>Poz.</th>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#4caf50" }}>Zawodnik</th>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#4caf50" }}>Drużyna</th>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#4caf50" }}>Bramki</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topPlayers.top_scorers.map((player, index) => (
+                      <tr key={player.id} style={{ backgroundColor: index % 2 === 0 ? "#333333" : "#2a2a2a" }}>
+                        <td style={tableCellStyle}>
+                          <span style={{ 
+                            fontWeight: "bold", 
+                            color: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : index === 2 ? "#CD7F32" : "#ffffff"
+                          }}>
+                            {index + 1}
+                          </span>
+                        </td>
+                        <td style={tableCellStyle}>
+                          #{player.shirt_number} {player.first_name} {player.last_name}
+                        </td>
+                        <td style={tableCellStyle}>{player.team_name}</td>
+                        <td style={{ ...tableCellStyle, fontWeight: "bold", color: "#4caf50" }}>
+                          {player.total_goals}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Top asystenci */}
+            <div>
+              <h4 style={{ 
+                color: "#2196F3", 
+                marginBottom: "15px", 
+                textAlign: "center",
+                backgroundColor: "#2a2a2a",
+                padding: "10px",
+                borderRadius: "8px"
+              }}>
+                🅰️ Top 5 Asystentów
+              </h4>
+              
+              {topPlayers.top_assists.length === 0 ? (
+                <div style={{ 
+                  textAlign: "center", 
+                  color: "#aaa", 
+                  fontStyle: "italic",
+                  padding: "20px",
+                  backgroundColor: "#2a2a2a",
+                  borderRadius: "8px"
+                }}>
+                  Brak danych o asystach
+                </div>
+              ) : (
+                <table style={{ 
+                  width: "100%", 
+                  borderCollapse: "collapse", 
+                  backgroundColor: "#2a2a2a", 
+                  borderRadius: "8px",
+                  overflow: "hidden"
+                }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "#2196F3" }}>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#2196F3" }}>Poz.</th>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#2196F3" }}>Zawodnik</th>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#2196F3" }}>Drużyna</th>
+                      <th style={{ ...tableHeaderStyle, backgroundColor: "#2196F3" }}>Asysty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topPlayers.top_assists.map((player, index) => (
+                      <tr key={player.id} style={{ backgroundColor: index % 2 === 0 ? "#333333" : "#2a2a2a" }}>
+                        <td style={tableCellStyle}>
+                          <span style={{ 
+                            fontWeight: "bold", 
+                            color: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : index === 2 ? "#CD7F32" : "#ffffff"
+                          }}>
+                            {index + 1}
+                          </span>
+                        </td>
+                        <td style={tableCellStyle}>
+                          #{player.shirt_number} {player.first_name} {player.last_name}
+                        </td>
+                        <td style={tableCellStyle}>{player.team_name}</td>
+                        <td style={{ ...tableCellStyle, fontWeight: "bold", color: "#2196F3" }}>
+                          {player.total_assists}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

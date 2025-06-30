@@ -5,6 +5,7 @@ from app.db import engine, Base
 from app.models.league import League
 from app.models.team import Team
 from app.models.match import Match
+from app.models.match_player_stats import MatchPlayerStats
 from routers import leagues
 from routers import teams
 from routers import players

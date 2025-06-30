@@ -1,14 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import and_
+from sqlalchemy import and_, text
 from datetime import datetime, timedelta
 
 from app.db import get_async_session
 from app.models.match import Match
 from app.models.team import Team
 from app.models.league import League
-from app.schemas.match import MatchCreate, MatchRead, MatchUpdate, TeamStanding
+from app.models.player import Player
+from app.models.match_player_stats import MatchPlayerStats
+from app.schemas.match import MatchCreate, MatchRead, MatchUpdate, TeamStanding, MatchResultWithStats
+from app.schemas.match_player_stats import MatchPlayerStatsCreate, MatchPlayerStatsRead, MatchPlayerStatsUpdate
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
@@ -66,6 +69,105 @@ async def update_match_result(match_id: int, result: MatchUpdate, session: Async
     await session.commit()
     await session.refresh(match)
     return match
+
+
+@router.put("/{match_id}/result-with-stats", response_model=dict)
+async def update_match_result_with_stats(
+    match_id: int, 
+    result_data: MatchResultWithStats, 
+    session: AsyncSession = Depends(get_async_session)
+):
+    """Aktualizuje wynik meczu wraz ze statystykami zawodników z walidacją"""
+    
+    # Pobierz mecz
+    match = await session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    
+    # Pobierz zawodników obu drużyn
+    home_players_result = await session.execute(
+        select(Player).where(Player.team_id == match.home_team_id)
+    )
+    home_players = {p.id: p for p in home_players_result.scalars().all()}
+    
+    away_players_result = await session.execute(
+        select(Player).where(Player.team_id == match.away_team_id)
+    )
+    away_players = {p.id: p for p in away_players_result.scalars().all()}
+    
+    # Policz bramki ze statystyk zawodników per drużyna
+    home_team_goals_from_stats = 0
+    away_team_goals_from_stats = 0
+    total_assists = 0
+    
+    for stat in result_data.player_stats:
+        player_id = stat.player_id
+        
+        # Sprawdź czy zawodnik istnieje
+        if player_id not in home_players and player_id not in away_players:
+            raise HTTPException(status_code=400, detail=f"Player {player_id} not found in either team")
+        
+        # Policz bramki per drużyna
+        if player_id in home_players:
+            home_team_goals_from_stats += stat.goals
+        else:
+            away_team_goals_from_stats += stat.goals
+        
+        total_assists += stat.assists
+    
+    # Walidacja: bramki ze statystyk muszą się zgadzać z wynikiem meczu
+    if home_team_goals_from_stats != result_data.home_goals:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Home team goals mismatch: result says {result_data.home_goals}, player stats sum to {home_team_goals_from_stats}"
+        )
+    
+    if away_team_goals_from_stats != result_data.away_goals:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Away team goals mismatch: result says {result_data.away_goals}, player stats sum to {away_team_goals_from_stats}"
+        )
+    
+    # Walidacja: asyst nie może być więcej niż bramek
+    total_goals = result_data.home_goals + result_data.away_goals
+    if total_assists > total_goals:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Too many assists ({total_assists}) for total goals ({total_goals})"
+        )
+    
+    # Zaktualizuj wynik meczu
+    match.home_goals = result_data.home_goals
+    match.away_goals = result_data.away_goals
+    match.is_finished = True
+    
+    # Usuń stare statystyki
+    old_stats_result = await session.execute(
+        select(MatchPlayerStats).where(MatchPlayerStats.match_id == match_id)
+    )
+    for old_stat in old_stats_result.scalars().all():
+        await session.delete(old_stat)
+    
+    # Dodaj nowe statystyki
+    created_stats = 0
+    for stat_data in result_data.player_stats:
+        if stat_data.was_present or stat_data.goals > 0 or stat_data.assists > 0:
+            stat_data.match_id = match_id  # Upewnij się że match_id jest ustawione
+            db_stat = MatchPlayerStats(**stat_data.dict())
+            session.add(db_stat)
+            created_stats += 1
+    
+    await session.commit()
+    await session.refresh(match)
+    
+    return {
+        "message": "Match result and player stats updated successfully",
+        "match_id": match_id,
+        "final_score": f"{result_data.home_goals}:{result_data.away_goals}",
+        "player_stats_created": created_stats,
+        "total_goals": total_goals,
+        "total_assists": total_assists
+    }
 
 
 @router.get("/league/{league_id}/table", response_model=list[TeamStanding])
@@ -294,3 +396,210 @@ async def get_match(match_id: int, session: AsyncSession = Depends(get_async_ses
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
     return match
+
+
+@router.get("/{match_id}/players", response_model=dict)
+async def get_match_players(match_id: int, session: AsyncSession = Depends(get_async_session)):
+    """Pobiera wszystkich zawodników drużyn grających w danym meczu wraz z ich statystykami"""
+    
+    # Pobierz mecz
+    match = await session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    
+    # Pobierz zawodników drużyny gospodarzy
+    home_players_result = await session.execute(
+        select(Player).where(Player.team_id == match.home_team_id)
+    )
+    home_players = home_players_result.scalars().all()
+    
+    # Pobierz zawodników drużyny gości
+    away_players_result = await session.execute(
+        select(Player).where(Player.team_id == match.away_team_id)
+    )
+    away_players = away_players_result.scalars().all()
+    
+    # Pobierz istniejące statystyki dla tego meczu
+    stats_result = await session.execute(
+        select(MatchPlayerStats).where(MatchPlayerStats.match_id == match_id)
+    )
+    existing_stats = {stat.player_id: stat for stat in stats_result.scalars().all()}
+    
+    # Przygotuj dane dla frontendu
+    home_team_data = []
+    for player in home_players:
+        stats = existing_stats.get(player.id)
+        player_data = {
+            "id": player.id,
+            "first_name": player.first_name,
+            "last_name": player.last_name,
+            "shirt_number": player.shirt_number,
+            "was_present": stats.was_present if stats else False,
+            "goals": stats.goals if stats else 0,
+            "assists": stats.assists if stats else 0,
+            "goal_minute": stats.goal_minute if stats else ""
+        }
+        home_team_data.append(player_data)
+    
+    away_team_data = []
+    for player in away_players:
+        stats = existing_stats.get(player.id)
+        player_data = {
+            "id": player.id,
+            "first_name": player.first_name,
+            "last_name": player.last_name,
+            "shirt_number": player.shirt_number,
+            "was_present": stats.was_present if stats else False,
+            "goals": stats.goals if stats else 0,
+            "assists": stats.assists if stats else 0,
+            "goal_minute": stats.goal_minute if stats else ""
+        }
+        away_team_data.append(player_data)
+    
+    return {
+        "home_team": {
+            "id": match.home_team_id,
+            "players": sorted(home_team_data, key=lambda x: x["shirt_number"])
+        },
+        "away_team": {
+            "id": match.away_team_id,
+            "players": sorted(away_team_data, key=lambda x: x["shirt_number"])
+        }
+    }
+
+
+@router.put("/{match_id}/player-stats", response_model=dict)
+async def update_match_player_stats(
+    match_id: int, 
+    player_stats: list[MatchPlayerStatsCreate], 
+    session: AsyncSession = Depends(get_async_session)
+):
+    """Aktualizuje statystyki wszystkich zawodników dla danego meczu"""
+    
+    # Sprawdź czy mecz istnieje
+    match = await session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    
+    # Usuń istniejące statystyki dla tego meczu
+    await session.execute(
+        select(MatchPlayerStats).where(MatchPlayerStats.match_id == match_id)
+    )
+    existing_stats = await session.execute(
+        select(MatchPlayerStats).where(MatchPlayerStats.match_id == match_id)
+    )
+    for stat in existing_stats.scalars().all():
+        await session.delete(stat)
+    
+    # Dodaj nowe statystyki
+    created_stats = []
+    for stat_data in player_stats:
+        if stat_data.match_id != match_id:
+            raise HTTPException(status_code=400, detail="Match ID mismatch")
+        
+        # Sprawdź czy zawodnik istnieje
+        player = await session.get(Player, stat_data.player_id)
+        if not player:
+            raise HTTPException(status_code=404, detail=f"Player {stat_data.player_id} not found")
+        
+        # Tylko dodaj statystyki jeśli zawodnik był obecny lub ma jakieś statystyki
+        if stat_data.was_present or stat_data.goals > 0 or stat_data.assists > 0:
+            db_stat = MatchPlayerStats(**stat_data.dict())
+            session.add(db_stat)
+            created_stats.append(stat_data)
+    
+    await session.commit()
+    
+    return {
+        "message": f"Zaktualizowano statystyki dla {len(created_stats)} zawodników",
+        "match_id": match_id,
+        "updated_players": len(created_stats)
+    }
+
+
+@router.get("/league/{league_id}/top-players", response_model=dict)
+async def get_league_top_players(league_id: int, session: AsyncSession = Depends(get_async_session)):
+    """Pobiera top strzelców i asystentów dla danej ligi"""
+    
+    # Sprawdź czy liga istnieje
+    league = await session.get(League, league_id)
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+    
+    # Zapytanie o top strzelców
+    top_scorers_query = """
+    SELECT 
+        p.id,
+        p.first_name,
+        p.last_name,
+        p.shirt_number,
+        t.name as team_name,
+        SUM(mps.goals) as total_goals
+    FROM players p
+    JOIN teams t ON p.team_id = t.id
+    JOIN match_player_stats mps ON p.id = mps.player_id
+    JOIN matches m ON mps.match_id = m.id
+    WHERE t.league_id = :league_id AND mps.goals > 0
+    GROUP BY p.id, p.first_name, p.last_name, p.shirt_number, t.name
+    ORDER BY total_goals DESC, p.last_name
+    LIMIT 5
+    """
+    
+    # Zapytanie o top asystentów
+    top_assists_query = """
+    SELECT 
+        p.id,
+        p.first_name,
+        p.last_name,
+        p.shirt_number,
+        t.name as team_name,
+        SUM(mps.assists) as total_assists
+    FROM players p
+    JOIN teams t ON p.team_id = t.id
+    JOIN match_player_stats mps ON p.id = mps.player_id
+    JOIN matches m ON mps.match_id = m.id
+    WHERE t.league_id = :league_id AND mps.assists > 0
+    GROUP BY p.id, p.first_name, p.last_name, p.shirt_number, t.name
+    ORDER BY total_assists DESC, p.last_name
+    LIMIT 5
+    """
+    
+    # Wykonaj zapytania
+    top_scorers_result = await session.execute(
+        text(top_scorers_query),
+        {"league_id": league_id}
+    )
+    
+    top_assists_result = await session.execute(
+        text(top_assists_query),
+        {"league_id": league_id}
+    )
+    
+    # Przygotuj dane
+    top_scorers = []
+    for row in top_scorers_result:
+        top_scorers.append({
+            "id": row.id,
+            "first_name": row.first_name,
+            "last_name": row.last_name,
+            "shirt_number": row.shirt_number,
+            "team_name": row.team_name,
+            "total_goals": row.total_goals
+        })
+    
+    top_assists = []
+    for row in top_assists_result:
+        top_assists.append({
+            "id": row.id,
+            "first_name": row.first_name,
+            "last_name": row.last_name,
+            "shirt_number": row.shirt_number,
+            "team_name": row.team_name,
+            "total_assists": row.total_assists
+        })
+    
+    return {
+        "league_id": league_id,
+        "top_scorers": top_scorers,
+        "top_assists": top_assists
+    }

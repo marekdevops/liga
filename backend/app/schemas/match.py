@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+from app.schemas.match_player_stats import MatchPlayerStatsCreate
 
 
 class MatchBase(BaseModel):
@@ -18,6 +19,35 @@ class MatchCreate(MatchBase):
 class MatchUpdate(BaseModel):
     home_goals: int = Field(..., ge=0)
     away_goals: int = Field(..., ge=0)
+
+
+class MatchResultWithStats(BaseModel):
+    """Schemat dla zapisywania wyniku meczu wraz ze statystykami zawodników"""
+    home_goals: int = Field(..., ge=0)
+    away_goals: int = Field(..., ge=0)
+    player_stats: List[MatchPlayerStatsCreate]
+    
+    @validator('player_stats')
+    def validate_player_stats(cls, v, values):
+        """Walidacja statystyk zawodników"""
+        if 'home_goals' not in values or 'away_goals' not in values:
+            return v
+            
+        home_goals = values['home_goals']
+        away_goals = values['away_goals']
+        
+        # Policz bramki per drużyna ze statystyk zawodników
+        home_team_goals = 0
+        away_team_goals = 0
+        
+        # Grupuj statystyki per drużyna (potrzebujemy dodatkowych informacji o drużynach)
+        for stat in v:
+            if stat.goals > 0:
+                # Tutaj potrzebujemy sprawdzić do jakiej drużyny należy zawodnik
+                # To zostanie zwalidowane w endpoincie
+                pass
+                
+        return v
 
 
 class MatchRead(MatchBase):

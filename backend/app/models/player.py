@@ -13,3 +13,4 @@ class Player(Base):
 
     team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
     team = relationship("Team", back_populates="players")
+    match_stats = relationship("MatchPlayerStats", back_populates="player", cascade="all, delete-orphan")
