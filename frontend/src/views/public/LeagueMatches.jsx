@@ -11,7 +11,7 @@ export default function LeagueMatches() {
     const fetchData = async () => {
       try {
         // Pobierz drużyny
-        const teamsResponse = await fetch(`/league/${leagueId}/teams`);
+        const teamsResponse = await fetch(`/api/league/${leagueId}/teams`);
         const teamsData = await teamsResponse.json();
         
         // Utwórz mapę ID -> nazwa drużyny
@@ -22,7 +22,7 @@ export default function LeagueMatches() {
         setTeams(teamsMap);
 
         // Pobierz mecze
-        const matchesResponse = await fetch(`/matches/league/${leagueId}?_t=${Date.now()}`);
+        const matchesResponse = await fetch(`/api/matches/league/${leagueId}?_t=${Date.now()}`);
         const matchesData = await matchesResponse.json();
         console.log("Pobrano mecze:", matchesData.length, "mecze");
         console.log("Kolejki:", [...new Set(matchesData.map(m => m.round_number))].sort());

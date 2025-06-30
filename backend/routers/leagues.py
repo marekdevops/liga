@@ -22,6 +22,17 @@ async def get_LeagueRead(session: AsyncSession = Depends(get_async_session)):
     result = await session.execute(select(League))
     return result.scalars().all()
 
+@router.get("/{league_id}", response_model=LeagueRead)
+async def get_league_by_id(
+    league_id: int = Path(..., description="ID ligi"),
+    session: AsyncSession = Depends(get_async_session)
+):
+    result = await session.execute(select(League).where(League.id == league_id))
+    league = result.scalar_one_or_none()
+    if not league:
+        raise HTTPException(status_code=404, detail="Liga nie znaleziona")
+    return league
+
 @router.get("/{league_id}/teams", response_model=list[TeamRead])
 async def get_teams_for_league(
     league_id: int = Path(..., description="ID ligi"),

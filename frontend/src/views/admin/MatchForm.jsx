@@ -19,7 +19,7 @@ export default function MatchForm() {
       setLeagueId(league);
       
       // Pobierz drużyny z tej ligi
-      fetch(`/league/${league}/teams`)
+      fetch(`/api/league/${league}/teams`)
         .then((res) => res.json())
         .then((data) => setTeams(data))
         .catch((err) => console.error("Błąd pobierania drużyn:", err));
@@ -34,7 +34,7 @@ export default function MatchForm() {
 
     if (window.confirm("Czy na pewno chcesz wygenerować kompletny terminarz dla tej ligi? Istniejące mecze zostaną zastąpione.")) {
       try {
-        const response = await fetch(`/matches/league/${leagueId}/generate-schedule`, {
+        const response = await fetch(`/api/matches/league/${leagueId}/generate-schedule`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
@@ -71,7 +71,7 @@ export default function MatchForm() {
     };
 
     try {
-      const response = await fetch("/matches/", {
+      const response = await fetch("/api/matches/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(matchData),

@@ -3,18 +3,19 @@ import { useParams, Link } from "react-router-dom";
 
 export default function LeagueDetails() {
   const { leagueId } = useParams();
+  const [league, setLeague] = useState(null);
   const [standings, setStandings] = useState([]);
   const [topPlayers, setTopPlayers] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   console.log("LeagueDetails component loaded with leagueId:", leagueId);
-  console.log("Current state - loading:", loading, "standings:", standings.length, "topPlayers:", topPlayers);
+  console.log("Current state - loading:", loading, "league:", league?.name, "standings:", standings.length, "topPlayers:", topPlayers);
 
   const handleGenerateSchedule = async () => {
     if (window.confirm("Czy na pewno chcesz wygenerować kompletny terminarz dla tej ligi? To może nadpisać istniejące mecze.")) {
       try {
-        const response = await fetch(`/matches/league/${leagueId}/generate-schedule`, {
+        const response = await fetch(`/api/matches/league/${leagueId}/generate-schedule`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
@@ -40,8 +41,20 @@ export default function LeagueDetails() {
       try {
         console.log("Fetching data for league:", leagueId);
         
+        // Pobierz szczegóły ligi
+        const leagueResponse = await fetch(`/api/league/${leagueId}`);
+        console.log("League response status:", leagueResponse.status);
+        
+        if (leagueResponse.ok) {
+          const leagueData = await leagueResponse.json();
+          console.log("League data:", leagueData);
+          setLeague(leagueData);
+        } else {
+          console.error("Failed to fetch league:", leagueResponse.status);
+        }
+        
         // Pobierz tabelę ligi
-        const standingsResponse = await fetch(`/matches/league/${leagueId}/table`);
+        const standingsResponse = await fetch(`/api/matches/league/${leagueId}/table`);
         console.log("Standings response status:", standingsResponse.status);
         
         if (standingsResponse.ok) {
@@ -57,7 +70,7 @@ export default function LeagueDetails() {
         }
 
         // Pobierz statystyki indywidualne
-        const playersResponse = await fetch(`/matches/league/${leagueId}/top-players`);
+        const playersResponse = await fetch(`/api/matches/league/${leagueId}/top-players`);
         console.log("Players response status:", playersResponse.status);
         
         if (playersResponse.ok) {
@@ -94,7 +107,7 @@ export default function LeagueDetails() {
       }}>
         <div>
           <div style={{ fontSize: "18px", marginBottom: "10px" }}>⚽ Ładowanie danych ligi...</div>
-          <div style={{ color: "#4fc3f7" }}>Liga ID: {leagueId}</div>
+          <div style={{ color: "#4fc3f7" }}>Liga: {league?.name || `ID: ${leagueId}`}</div>
         </div>
       </div>
     );
@@ -136,7 +149,7 @@ export default function LeagueDetails() {
       color: "#e0e0e0"
     }}>
       <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>
-        Tabela ligi (ID: {leagueId}) - Dane: {standings.length} drużyn
+        📊 {league?.name || `Liga ID: ${leagueId}`} - Tabela
       </h2>
       <div style={{ marginBottom: "20px" }}>
         <Link 

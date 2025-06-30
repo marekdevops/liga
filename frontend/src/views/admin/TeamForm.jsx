@@ -6,7 +6,7 @@ export default function TeamForm() {
   const [leagueId, setLeagueId] = useState("");
 
   useEffect(() => {
-    fetch("/league/")
+    fetch("/api/league/")
       .then((res) => res.json())
       .then((data) => setLeagues(data))
       .catch((err) => console.error("Błąd pobierania lig:", err));
@@ -16,7 +16,7 @@ export default function TeamForm() {
     e.preventDefault();
     const newTeam = { name, league_id: parseInt(leagueId) };
 
-    fetch("/teams/", {
+    fetch("/api/teams/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newTeam),

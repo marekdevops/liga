@@ -8,7 +8,7 @@ export default function LeagueForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("/league/", {
+    const response = await fetch("/api/league/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),

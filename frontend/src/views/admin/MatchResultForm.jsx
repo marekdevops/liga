@@ -31,7 +31,7 @@ export default function MatchResultForm() {
     const fetchMatchDetails = async () => {
       try {
         // Pobierz mecz
-        const matchResponse = await fetch(`/matches/${matchId}`);
+        const matchResponse = await fetch(`/api/matches/${matchId}`);
         if (!matchResponse.ok) {
           throw new Error("Mecz nie znaleziony");
         }
@@ -39,7 +39,7 @@ export default function MatchResultForm() {
         setMatch(matchData);
 
         // Pobierz wszystkie drużyny z ligi
-        const teamsResponse = await fetch(`/league/${matchData.league_id}/teams`);
+        const teamsResponse = await fetch(`/api/league/${matchData.league_id}/teams`);
         if (teamsResponse.ok) {
           const teamsData = await teamsResponse.json();
           
@@ -52,7 +52,7 @@ export default function MatchResultForm() {
         }
 
         // Pobierz zawodników obu drużyn
-        const playersResponse = await fetch(`/matches/${matchId}/players`);
+        const playersResponse = await fetch(`/api/matches/${matchId}/players`);
         if (playersResponse.ok) {
           const playersData = await playersResponse.json();
           setPlayersData(playersData);
@@ -118,7 +118,7 @@ export default function MatchResultForm() {
     }
 
     try {
-      const response = await fetch("/players/", {
+      const response = await fetch("/api/players/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -178,7 +178,7 @@ export default function MatchResultForm() {
     }
 
     try {
-      const response = await fetch(`/matches/${matchId}/pdf-report`, {
+      const response = await fetch(`/api/matches/${matchId}/pdf-report`, {
         method: 'GET',
         headers: {
           'Accept': 'application/pdf',
@@ -228,7 +228,7 @@ export default function MatchResultForm() {
       };
 
       try {
-        const response = await fetch(`/matches/${matchId}/result`, {
+        const response = await fetch(`/api/matches/${matchId}/result`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(resultData),
@@ -321,7 +321,7 @@ export default function MatchResultForm() {
     };
 
     try {
-      const response = await fetch(`/matches/${matchId}/result-with-stats`, {
+      const response = await fetch(`/api/matches/${matchId}/result-with-stats`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(resultWithStatsData),

@@ -6,7 +6,7 @@ export default function LeagueTeams() {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    fetch(`/league/${leagueId}/teams`)
+    fetch(`/api/league/${leagueId}/teams`)
       .then((res) => res.json())
       .then((data) => setTeams(data))
       .catch((err) => console.error("Błąd pobierania drużyn:", err));

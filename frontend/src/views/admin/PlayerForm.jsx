@@ -29,7 +29,7 @@ function PlayerForm() {
   const fetchLeagues = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/league/");
+      const response = await fetch("/api/league/");
       if (!response.ok) throw new Error("Błąd pobierania lig");
       const data = await response.json();
       setLeagues(data);
@@ -43,7 +43,7 @@ function PlayerForm() {
   const fetchTeamsForLeague = async (leagueId) => {
     try {
       setLoading(true);
-      const response = await fetch(`/league/${leagueId}/teams`);
+      const response = await fetch(`/api/league/${leagueId}/teams`);
       if (!response.ok) throw new Error("Błąd pobierania drużyn");
       const data = await response.json();
       setTeams(data);
@@ -76,7 +76,7 @@ function PlayerForm() {
 
     try {
       setLoading(true);
-      const response = await fetch("/players/", {
+      const response = await fetch("/api/players/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
