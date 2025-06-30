@@ -6,6 +6,10 @@ export default function LeagueDetails() {
   const [standings, setStandings] = useState([]);
   const [topPlayers, setTopPlayers] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  console.log("LeagueDetails component loaded with leagueId:", leagueId);
+  console.log("Current state - loading:", loading, "standings:", standings.length, "topPlayers:", topPlayers);
 
   const handleGenerateSchedule = async () => {
     if (window.confirm("Czy na pewno chcesz wygenerować kompletny terminarz dla tej ligi? To może nadpisać istniejące mecze.")) {
@@ -34,31 +38,94 @@ export default function LeagueDetails() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("Fetching data for league:", leagueId);
+        
         // Pobierz tabelę ligi
         const standingsResponse = await fetch(`/matches/league/${leagueId}/table`);
+        console.log("Standings response status:", standingsResponse.status);
+        
         if (standingsResponse.ok) {
           const standingsData = await standingsResponse.json();
+          console.log("Standings data:", standingsData);
           setStandings(standingsData);
+          // Temporary alert for debugging
+          if (standingsData.length > 0) {
+            console.log("Setting standings with", standingsData.length, "teams");
+          }
+        } else {
+          console.error("Failed to fetch standings:", standingsResponse.status);
         }
 
         // Pobierz statystyki indywidualne
         const playersResponse = await fetch(`/matches/league/${leagueId}/top-players`);
+        console.log("Players response status:", playersResponse.status);
+        
         if (playersResponse.ok) {
           const playersData = await playersResponse.json();
+          console.log("Players data:", playersData);
           setTopPlayers(playersData);
+        } else {
+          console.error("Failed to fetch top players:", playersResponse.status);
         }
       } catch (err) {
         console.error("Błąd pobierania danych:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    if (leagueId) {
+      fetchData();
+    }
   }, [leagueId]);
 
   if (loading) {
-    return <div>Ładowanie tabeli...</div>;
+    return (
+      <div style={{ 
+        padding: "20px", 
+        backgroundColor: "#1e1e1e", 
+        minHeight: "100vh",
+        color: "#e0e0e0",
+        textAlign: "center",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
+        <div>
+          <div style={{ fontSize: "18px", marginBottom: "10px" }}>⚽ Ładowanie danych ligi...</div>
+          <div style={{ color: "#4fc3f7" }}>Liga ID: {leagueId}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        padding: "20px", 
+        backgroundColor: "#1e1e1e", 
+        minHeight: "100vh",
+        color: "#e0e0e0",
+        textAlign: "center"
+      }}>
+        <h2 style={{ color: "#f44336" }}>❌ Błąd ładowania danych</h2>
+        <p>{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#4fc3f7",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+          🔄 Spróbuj ponownie
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -68,7 +135,9 @@ export default function LeagueDetails() {
       minHeight: "100vh",
       color: "#e0e0e0"
     }}>
-      <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>Tabela ligi</h2>
+      <h2 style={{ color: "#ffffff", marginBottom: "20px" }}>
+        Tabela ligi (ID: {leagueId}) - Dane: {standings.length} drużyn
+      </h2>
       <div style={{ marginBottom: "20px" }}>
         <Link 
           to={`/league/${leagueId}/matches`} 
@@ -169,7 +238,7 @@ export default function LeagueDetails() {
       )}
 
       {/* Statystyki indywidualne */}
-      {topPlayers && (topPlayers.top_scorers.length > 0 || topPlayers.top_assists.length > 0) && (
+      {topPlayers && (topPlayers.top_goalscorers?.length > 0 || topPlayers.top_assisters?.length > 0) && (
         <div style={{ marginTop: "40px" }}>
           <h3 style={{ color: "#ffffff", marginBottom: "30px", textAlign: "center" }}>
             📊 Statystyki indywidualne
@@ -196,7 +265,7 @@ export default function LeagueDetails() {
                 ⚽ Top 5 Strzelców
               </h4>
               
-              {topPlayers.top_scorers.length === 0 ? (
+              {(!topPlayers.top_goalscorers || topPlayers.top_goalscorers.length === 0) ? (
                 <div style={{ 
                   textAlign: "center", 
                   color: "#aaa", 
@@ -224,7 +293,7 @@ export default function LeagueDetails() {
                     </tr>
                   </thead>
                   <tbody>
-                    {topPlayers.top_scorers.map((player, index) => (
+                    {topPlayers.top_goalscorers.map((player, index) => (
                       <tr key={player.id} style={{ backgroundColor: index % 2 === 0 ? "#333333" : "#2a2a2a" }}>
                         <td style={tableCellStyle}>
                           <span style={{ 
@@ -261,7 +330,7 @@ export default function LeagueDetails() {
                 🅰️ Top 5 Asystentów
               </h4>
               
-              {topPlayers.top_assists.length === 0 ? (
+              {(!topPlayers.top_assisters || topPlayers.top_assisters.length === 0) ? (
                 <div style={{ 
                   textAlign: "center", 
                   color: "#aaa", 
@@ -289,7 +358,7 @@ export default function LeagueDetails() {
                     </tr>
                   </thead>
                   <tbody>
-                    {topPlayers.top_assists.map((player, index) => (
+                    {topPlayers.top_assisters.map((player, index) => (
                       <tr key={player.id} style={{ backgroundColor: index % 2 === 0 ? "#333333" : "#2a2a2a" }}>
                         <td style={tableCellStyle}>
                           <span style={{ 
