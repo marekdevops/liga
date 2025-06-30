@@ -10,6 +10,8 @@ export default function LeagueMatches() {
   const [teams, setTeams] = useState({});
   const [loading, setLoading] = useState(true);
 
+  console.log('LeagueMatches: isAuthenticated =', isAuthenticated);
+
   useEffect(() => {
     const fetchData = async () => {
       try {

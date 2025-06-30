@@ -7,6 +7,8 @@ export default function TopBar() {
   const { isAuthenticated, logout } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  console.log('TopBar: isAuthenticated =', isAuthenticated);
+
   return (
     <>
       <div style={{

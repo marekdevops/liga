@@ -17,19 +17,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Sprawdź czy użytkownik jest zalogowany (localStorage)
     const token = localStorage.getItem('authToken');
+    console.log('AuthContext: Checking token:', token);
     if (token) {
+      console.log('AuthContext: Token found, setting authenticated to true');
       setIsAuthenticated(true);
+    } else {
+      console.log('AuthContext: No token found, setting authenticated to false');
     }
     setIsLoading(false);
   }, []);
 
   const login = (username, password) => {
+    console.log('AuthContext: Attempting login with:', username, password);
     // Prosta autoryzacja - w rzeczywistej aplikacji byłoby to zapytanie do API
     if (username === 'admin' && password === 'admin123') {
+      console.log('AuthContext: Login successful');
       localStorage.setItem('authToken', 'fake-jwt-token');
       setIsAuthenticated(true);
       return true;
     }
+    console.log('AuthContext: Login failed');
     return false;
   };
 
