@@ -94,14 +94,11 @@ function PlayerForm() {
 
       alert(`Zawodnik ${firstName} ${lastName} został dodany do drużyny ${selectedTeam.name}!`);
       
-      // Reset formularza
+      // Reset tylko danych zawodnika, pozostaw wybór drużyny
       setFirstName("");
       setLastName("");
       setNumber("");
-      setStep(1);
-      setSelectedLeague(null);
-      setSelectedTeam(null);
-      setTeams([]);
+      // NIE resetujemy kroku, ligi ani drużyny - zostajemy w tej samej drużynie
       
     } catch (err) {
       setError("Błąd tworzenia zawodnika: " + err.message);
@@ -122,6 +119,11 @@ function PlayerForm() {
     setError("");
   };
 
+  const goToMainMenu = () => {
+    // Powrót do menu głównego
+    window.location.href = '/';
+  };
+
   if (loading) {
     return (
       <div className="player-form-container">
@@ -134,11 +136,16 @@ function PlayerForm() {
     <div className="player-form-container">
       <div className="player-form-header">
         <h2>Dodaj zawodnika</h2>
-        {step > 1 && (
-          <button className="back-button" onClick={goBack}>
-            ← Wstecz
+        <div className="header-buttons">
+          {step > 1 && (
+            <button className="back-button" onClick={goBack}>
+              ← Wstecz
+            </button>
+          )}
+          <button className="menu-button" onClick={goToMainMenu}>
+            🏠 Menu główne
           </button>
-        )}
+        </div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -237,6 +244,19 @@ function PlayerForm() {
             
             <button type="submit" className="submit-button" disabled={loading}>
               {loading ? "Zapisywanie..." : "Dodaj zawodnika"}
+            </button>
+            
+            <button 
+              type="button" 
+              className="add-another-button" 
+              onClick={() => {
+                setFirstName("");
+                setLastName("");
+                setNumber("");
+                setError("");
+              }}
+            >
+              ➕ Dodaj kolejnego zawodnika
             </button>
           </form>
         </div>

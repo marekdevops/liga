@@ -1,8 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_, text
 from datetime import datetime, timedelta
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 
 from app.db import get_async_session
 from app.models.match import Match
@@ -599,7 +606,179 @@ async def get_league_top_players(league_id: int, session: AsyncSession = Depends
         })
     
     return {
-        "league_id": league_id,
-        "top_scorers": top_scorers,
-        "top_assists": top_assists
+        "top_goalscorers": top_scorers,
+        "top_assisters": top_assists
     }
+
+
+@router.get("/{match_id}/pdf-report")
+async def generate_match_pdf_report(match_id: int, session: AsyncSession = Depends(get_async_session)):
+    """Generuje raport meczowy w formacie PDF"""
+    
+    # Pobierz dane meczu
+    match = await session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    
+    if not match.is_finished:
+        raise HTTPException(status_code=400, detail="Match is not finished yet")
+    
+    # Pobierz dane drużyn
+    home_team = await session.get(Team, match.home_team_id)
+    away_team = await session.get(Team, match.away_team_id)
+    league = await session.get(League, match.league_id)
+    
+    # Pobierz statystyki zawodników
+    stats_result = await session.execute(
+        select(MatchPlayerStats, Player, Team)
+        .join(Player, MatchPlayerStats.player_id == Player.id)
+        .join(Team, Player.team_id == Team.id)
+        .where(MatchPlayerStats.match_id == match_id)
+        .order_by(Team.id, Player.shirt_number)
+    )
+    
+    player_stats = []
+    for stat, player, team in stats_result:
+        if stat.was_present or stat.goals > 0 or stat.assists > 0:
+            player_stats.append({
+                'team_name': team.name,
+                'team_id': team.id,
+                'player_name': f"{player.first_name} {player.last_name}",
+                'shirt_number': player.shirt_number,
+                'goals': stat.goals,
+                'assists': stat.assists,
+                'goal_minute': stat.goal_minute if stat.goal_minute else '',
+                'was_present': stat.was_present
+            })
+    
+    # Tworzenie PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+    
+    # Style
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Title'],
+        fontSize=18,
+        spaceAfter=30,
+        alignment=1  # CENTER
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=12,
+        textColor=colors.darkblue
+    )
+    
+    normal_style = styles['Normal']
+    
+    # Elementy dokumentu
+    story = []
+    
+    # Tytuł
+    story.append(Paragraph("RAPORT MECZOWY", title_style))
+    story.append(Spacer(1, 20))
+    
+    # Informacje o meczu
+    match_info = f"""
+    <b>Liga:</b> {league.name}<br/>
+    <b>Data meczu:</b> {match.match_date.strftime('%d.%m.%Y %H:%M')}<br/>
+    <b>Runda:</b> {match.round_number}<br/>
+    <b>Wynik:</b> {home_team.name} {match.home_goals} : {match.away_goals} {away_team.name}
+    """
+    story.append(Paragraph(match_info, normal_style))
+    story.append(Spacer(1, 20))
+    
+    # Statystyki drużyn
+    if player_stats:
+        story.append(Paragraph("STATYSTYKI ZAWODNIKÓW", heading_style))
+        
+        # Drużyna gospodarzy
+        home_players = [p for p in player_stats if p['team_id'] == match.home_team_id]
+        if home_players:
+            story.append(Paragraph(f"<b>{home_team.name} (Gospodarze)</b>", normal_style))
+            story.append(Spacer(1, 10))
+            
+            home_data = [['Nr', 'Zawodnik', 'Obecność', 'Bramki', 'Asysty', 'Minuty bramek']]
+            for player in home_players:
+                home_data.append([
+                    str(player['shirt_number']),
+                    player['player_name'],
+                    '✓' if player['was_present'] else '✗',
+                    str(player['goals']),
+                    str(player['assists']),
+                    player['goal_minute']
+                ])
+            
+            home_table = Table(home_data)
+            home_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            story.append(home_table)
+            story.append(Spacer(1, 20))
+        
+        # Drużyna gości
+        away_players = [p for p in player_stats if p['team_id'] == match.away_team_id]
+        if away_players:
+            story.append(Paragraph(f"<b>{away_team.name} (Goście)</b>", normal_style))
+            story.append(Spacer(1, 10))
+            
+            away_data = [['Nr', 'Zawodnik', 'Obecność', 'Bramki', 'Asysty', 'Minuty bramek']]
+            for player in away_players:
+                away_data.append([
+                    str(player['shirt_number']),
+                    player['player_name'],
+                    '✓' if player['was_present'] else '✗',
+                    str(player['goals']),
+                    str(player['assists']),
+                    player['goal_minute']
+                ])
+            
+            away_table = Table(away_data)
+            away_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            story.append(away_table)
+            story.append(Spacer(1, 20))
+    
+    # Podsumowanie
+    total_goals = match.home_goals + match.away_goals
+    story.append(Paragraph("PODSUMOWANIE", heading_style))
+    summary = f"""
+    <b>Łączna liczba bramek:</b> {total_goals}<br/>
+    <b>Wygrana drużyna:</b> {
+        home_team.name if match.home_goals > match.away_goals 
+        else away_team.name if match.away_goals > match.home_goals 
+        else "Remis"
+    }<br/>
+    <b>Raport wygenerowany:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}
+    """
+    story.append(Paragraph(summary, normal_style))
+    
+    # Generowanie PDF
+    doc.build(story)
+    
+    # Zwracanie pliku
+    buffer.seek(0)
+    return StreamingResponse(
+        io.BytesIO(buffer.read()),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=raport_mecz_{match_id}.pdf"}
+    )

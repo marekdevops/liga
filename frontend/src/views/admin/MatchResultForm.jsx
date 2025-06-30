@@ -17,6 +17,14 @@ export default function MatchResultForm() {
   const [playerStats, setPlayerStats] = useState({});
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [matchSaved, setMatchSaved] = useState(false);
+  
+  // Stan dla dodawania nowych zawodników
+  const [showAddPlayerForm, setShowAddPlayerForm] = useState(null); // 'home' lub 'away'
+  const [newPlayerData, setNewPlayerData] = useState({
+    firstName: '',
+    lastName: '',
+    shirtNumber: ''
+  });
 
   useEffect(() => {
     // Pobierz szczegóły meczu i nazwy drużyn
@@ -101,6 +109,104 @@ export default function MatchResultForm() {
         [field]: Math.max(0, (prev[playerId][field] || 0) - 1)
       }
     }));
+  };
+
+  const addNewPlayer = async (teamId, teamType) => {
+    if (!newPlayerData.firstName || !newPlayerData.lastName || !newPlayerData.shirtNumber) {
+      alert("Wszystkie pola są wymagane");
+      return;
+    }
+
+    try {
+      const response = await fetch("/players/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: newPlayerData.firstName,
+          last_name: newPlayerData.lastName,
+          shirt_number: parseInt(newPlayerData.shirtNumber),
+          team_id: teamId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Błąd tworzenia zawodnika");
+      }
+
+      const newPlayer = await response.json();
+      
+      // Dodaj nowego zawodnika do listy
+      setPlayersData(prev => ({
+        ...prev,
+        [teamType === 'home' ? 'home_team' : 'away_team']: {
+          ...prev[teamType === 'home' ? 'home_team' : 'away_team'],
+          players: [...prev[teamType === 'home' ? 'home_team' : 'away_team'].players, {
+            id: newPlayer.id,
+            first_name: newPlayer.first_name,
+            last_name: newPlayer.last_name,
+            shirt_number: newPlayer.shirt_number
+          }].sort((a, b) => a.shirt_number - b.shirt_number)
+        }
+      }));
+
+      // Zainicjuj statystyki dla nowego zawodnika
+      setPlayerStats(prev => ({
+        ...prev,
+        [newPlayer.id]: {
+          was_present: false,
+          goals: 0,
+          assists: 0,
+          goal_minute: ''
+        }
+      }));
+
+      // Resetuj formularz
+      setNewPlayerData({ firstName: '', lastName: '', shirtNumber: '' });
+      setShowAddPlayerForm(null);
+      
+      alert(`Zawodnik ${newPlayer.first_name} ${newPlayer.last_name} został dodany!`);
+    } catch (err) {
+      alert("Błąd dodawania zawodnika: " + err.message);
+    }
+  };
+
+  const generatePDF = async () => {
+    if (!matchSaved) {
+      alert("Najpierw zapisz wynik meczu!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/matches/${matchId}/pdf-report`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Błąd generowania raportu");
+      }
+
+      // Pobierz PDF jako blob
+      const blob = await response.blob();
+      
+      // Stwórz link do pobrania
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `raport_mecz_${matchId}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      alert("Raport PDF został pobrany!");
+    } catch (err) {
+      alert("Błąd generowania PDF: " + err.message);
+    }
   };
 
   const validateAndSubmit = async (e) => {
@@ -485,10 +591,98 @@ export default function MatchResultForm() {
                 backgroundColor: "#2a2a2a",
                 padding: "10px",
                 borderRadius: "5px",
-                textAlign: "center"
+                textAlign: "center",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
               }}>
-                🏠 {teams[match?.home_team_id]} (Gospodarze)
+                <span>🏠 {teams[match?.home_team_id]} (Gospodarze)</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAddPlayerForm(showAddPlayerForm === 'home' ? null : 'home')}
+                  style={{
+                    backgroundColor: "#4CAF50",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 15px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    fontSize: "14px"
+                  }}
+                >
+                  {showAddPlayerForm === 'home' ? '❌ Anuluj' : '➕ Dodaj zawodnika'}
+                </button>
               </h4>
+              
+              {/* Formularz dodawania zawodnika */}
+              {showAddPlayerForm === 'home' && (
+                <div style={{
+                  backgroundColor: "#2a2a2a",
+                  padding: "15px",
+                  marginBottom: "15px",
+                  borderRadius: "8px",
+                  border: "2px solid #4CAF50"
+                }}>
+                  <h5 style={{ color: "#4CAF50", marginBottom: "15px" }}>Dodaj nowego zawodnika do drużyny gospodarzy</h5>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 100px auto", gap: "10px", alignItems: "end" }}>
+                    <input
+                      type="text"
+                      placeholder="Imię"
+                      value={newPlayerData.firstName}
+                      onChange={(e) => setNewPlayerData(prev => ({ ...prev, firstName: e.target.value }))}
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #555",
+                        borderRadius: "4px",
+                        backgroundColor: "#333",
+                        color: "#ffffff"
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Nazwisko"
+                      value={newPlayerData.lastName}
+                      onChange={(e) => setNewPlayerData(prev => ({ ...prev, lastName: e.target.value }))}
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #555",
+                        borderRadius: "4px",
+                        backgroundColor: "#333",
+                        color: "#ffffff"
+                      }}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Nr"
+                      value={newPlayerData.shirtNumber}
+                      onChange={(e) => setNewPlayerData(prev => ({ ...prev, shirtNumber: e.target.value }))}
+                      min="1"
+                      max="99"
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #555",
+                        borderRadius: "4px",
+                        backgroundColor: "#333",
+                        color: "#ffffff"
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addNewPlayer(match?.home_team_id, 'home')}
+                      style={{
+                        backgroundColor: "#4CAF50",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Dodaj
+                    </button>
+                  </div>
+                </div>
+              )}
               
               <div style={{ overflowX: "auto" }}>
                 <table style={{ 
@@ -524,10 +718,98 @@ export default function MatchResultForm() {
                 backgroundColor: "#2a2a2a",
                 padding: "10px",
                 borderRadius: "5px",
-                textAlign: "center"
+                textAlign: "center",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
               }}>
-                🚌 {teams[match?.away_team_id]} (Goście)
+                <span>🚌 {teams[match?.away_team_id]} (Goście)</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAddPlayerForm(showAddPlayerForm === 'away' ? null : 'away')}
+                  style={{
+                    backgroundColor: "#FF9800",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 15px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    fontSize: "14px"
+                  }}
+                >
+                  {showAddPlayerForm === 'away' ? '❌ Anuluj' : '➕ Dodaj zawodnika'}
+                </button>
               </h4>
+              
+              {/* Formularz dodawania zawodnika */}
+              {showAddPlayerForm === 'away' && (
+                <div style={{
+                  backgroundColor: "#2a2a2a",
+                  padding: "15px",
+                  marginBottom: "15px",
+                  borderRadius: "8px",
+                  border: "2px solid #FF9800"
+                }}>
+                  <h5 style={{ color: "#FF9800", marginBottom: "15px" }}>Dodaj nowego zawodnika do drużyny gości</h5>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 100px auto", gap: "10px", alignItems: "end" }}>
+                    <input
+                      type="text"
+                      placeholder="Imię"
+                      value={newPlayerData.firstName}
+                      onChange={(e) => setNewPlayerData(prev => ({ ...prev, firstName: e.target.value }))}
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #555",
+                        borderRadius: "4px",
+                        backgroundColor: "#333",
+                        color: "#ffffff"
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Nazwisko"
+                      value={newPlayerData.lastName}
+                      onChange={(e) => setNewPlayerData(prev => ({ ...prev, lastName: e.target.value }))}
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #555",
+                        borderRadius: "4px",
+                        backgroundColor: "#333",
+                        color: "#ffffff"
+                      }}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Nr"
+                      value={newPlayerData.shirtNumber}
+                      onChange={(e) => setNewPlayerData(prev => ({ ...prev, shirtNumber: e.target.value }))}
+                      min="1"
+                      max="99"
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #555",
+                        borderRadius: "4px",
+                        backgroundColor: "#333",
+                        color: "#ffffff"
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addNewPlayer(match?.away_team_id, 'away')}
+                      style={{
+                        backgroundColor: "#FF9800",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Dodaj
+                    </button>
+                  </div>
+                </div>
+              )}
               
               <div style={{ overflowX: "auto" }}>
                 <table style={{ 
@@ -573,7 +855,7 @@ export default function MatchResultForm() {
             <button 
               type="button" 
               style={{ ...buttonStyle, backgroundColor: "#2196F3" }}
-              onClick={() => alert("Funkcja raportu będzie dostępna wkrótce!")}
+              onClick={generatePDF}
             >
               📄 Wygeneruj raport meczowy
             </button>
