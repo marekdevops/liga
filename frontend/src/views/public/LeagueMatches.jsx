@@ -219,15 +219,15 @@ export default function LeagueMatches() {
         </Link>
       </div>
 
-      {/* Główny kontener z kaflami */}
+      {/* Główny kontener z kaflami - Flexbox fallback */}
       <div style={{ 
         padding: "0 10px 15px 10px",
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
+        display: "flex",
+        flexWrap: "wrap",
         gap: "15px",
         width: "100%",
         boxSizing: "border-box",
-        maxWidth: "100%"
+        justifyContent: "center"
       }}>
 
         {Object.keys(matchesByRound).length === 0 ? (
@@ -252,7 +252,11 @@ export default function LeagueMatches() {
                   borderRadius: "10px",
                   padding: "20px",
                   border: "2px solid #4CAF50",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+                  flex: "1 1 300px",
+                  maxWidth: "500px",
+                  minWidth: "300px",
+                  boxSizing: "border-box"
                 }}>
                   <h3 style={{ 
                     color: "#A5D6A7", 
@@ -297,7 +301,11 @@ export default function LeagueMatches() {
                   borderRadius: "10px",
                   padding: "20px",
                   border: "2px solid #FF9800",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+                  flex: "1 1 300px",
+                  maxWidth: "500px",
+                  minWidth: "300px",
+                  boxSizing: "border-box"
                 }}>
                   <h3 style={{ 
                     color: "#FFE0B2", 
