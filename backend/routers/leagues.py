@@ -18,8 +18,22 @@ async def create_league(league: LeagueCreate, session: AsyncSession = Depends(ge
     return db_league
 
 @router.get("/", response_model=list[LeagueRead])
-async def get_LeagueRead(session: AsyncSession = Depends(get_async_session)):
-    result = await session.execute(select(League))
+async def get_LeagueRead(
+    season_id: int = None, 
+    session: AsyncSession = Depends(get_async_session)
+):
+    if season_id:
+        result = await session.execute(select(League).where(League.season_id == season_id))
+    else:
+        result = await session.execute(select(League))
+    return result.scalars().all()
+
+@router.get("/season/{season_id}", response_model=list[LeagueRead])
+async def get_leagues_by_season(
+    season_id: int = Path(..., description="ID sezonu"),
+    session: AsyncSession = Depends(get_async_session)
+):
+    result = await session.execute(select(League).where(League.season_id == season_id))
     return result.scalars().all()
 
 @router.get("/{league_id}", response_model=LeagueRead)

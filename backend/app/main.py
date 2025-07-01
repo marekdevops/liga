@@ -6,10 +6,12 @@ from app.models.league import League
 from app.models.team import Team
 from app.models.match import Match
 from app.models.match_player_stats import MatchPlayerStats
+from app.models.season import Season
 from routers import leagues
 from routers import teams
 from routers import players
 from routers import matches
+from routers import seasons
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.exc import OperationalError
@@ -21,6 +23,7 @@ app.include_router(leagues.router)
 app.include_router(teams.router)
 app.include_router(players.router)
 app.include_router(matches.router)
+app.include_router(seasons.router, prefix="/seasons", tags=["seasons"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Można zawęzić np. ["http://localhost:3000"]
