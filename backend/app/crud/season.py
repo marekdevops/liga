@@ -20,7 +20,7 @@ def create_season(db: Session, season: SeasonCreate):
     if season.is_current:
         db.query(Season).filter(Season.is_current == True).update({"is_current": False})
     
-    db_season = Season(**season.dict())
+    db_season = Season(**season.model_dump())
     db.add(db_season)
     db.commit()
     db.refresh(db_season)
@@ -35,7 +35,7 @@ def update_season(db: Session, season_id: int, season_update: SeasonUpdate):
     if season_update.is_current:
         db.query(Season).filter(Season.is_current == True).update({"is_current": False})
     
-    update_data = season_update.dict(exclude_unset=True)
+    update_data = season_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_season, field, value)
     

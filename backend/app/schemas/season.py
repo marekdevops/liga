@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .league import LeagueRead
 
 class SeasonBase(BaseModel):
     name: str
@@ -26,11 +29,7 @@ class Season(SeasonBase):
         from_attributes = True
 
 class SeasonWithLeagues(Season):
-    leagues: List["League"] = []
+    leagues: List["LeagueRead"] = []
     
     class Config:
         from_attributes = True
-
-# Import na końcu żeby uniknąć circular imports
-from .league import League
-SeasonWithLeagues.model_rebuild()

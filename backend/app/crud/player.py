@@ -7,7 +7,7 @@ from app.schemas.player import PlayerCreate
 
 
 async def create_player(session: AsyncSession, player_in: PlayerCreate) -> Player:
-    player = Player(**player_in.dict())
+    player = Player(**player_in.model_dump())
     session.add(player)
     await session.commit()
     await session.refresh(player)

@@ -11,7 +11,7 @@ router = APIRouter(prefix="/league", tags=["LeagueRead"])
 
 @router.post("/", response_model=LeagueRead)
 async def create_league(league: LeagueCreate, session: AsyncSession = Depends(get_async_session)):
-    db_league = League(**league.dict())
+    db_league = League(**league.model_dump())
     session.add(db_league)
     await session.commit()
     await session.refresh(db_league)

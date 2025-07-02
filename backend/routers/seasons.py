@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ..db import get_db
-from ..schemas.season import Season, SeasonCreate, SeasonUpdate, SeasonWithLeagues
-from ..crud import season as season_crud
+from app.db import get_db
+from app.schemas.season import Season, SeasonCreate, SeasonUpdate, SeasonWithLeagues
+from app.crud import season as season_crud
 
 router = APIRouter()
 

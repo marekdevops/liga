@@ -45,7 +45,7 @@ async def create_match(match: MatchCreate, session: AsyncSession = Depends(get_a
     if match.home_team_id == match.away_team_id:
         raise HTTPException(status_code=400, detail="Team cannot play against itself")
     
-    db_match = Match(**match.dict())
+    db_match = Match(**match.model_dump())
     session.add(db_match)
     await session.commit()
     await session.refresh(db_match)
@@ -160,7 +160,7 @@ async def update_match_result_with_stats(
     for stat_data in result_data.player_stats:
         if stat_data.was_present or stat_data.goals > 0 or stat_data.assists > 0:
             stat_data.match_id = match_id  # Upewnij się że match_id jest ustawione
-            db_stat = MatchPlayerStats(**stat_data.dict())
+            db_stat = MatchPlayerStats(**stat_data.model_dump())
             session.add(db_stat)
             created_stats += 1
     
@@ -511,7 +511,7 @@ async def update_match_player_stats(
         
         # Tylko dodaj statystyki jeśli zawodnik był obecny lub ma jakieś statystyki
         if stat_data.was_present or stat_data.goals > 0 or stat_data.assists > 0:
-            db_stat = MatchPlayerStats(**stat_data.dict())
+            db_stat = MatchPlayerStats(**stat_data.model_dump())
             session.add(db_stat)
             created_stats.append(stat_data)
     
