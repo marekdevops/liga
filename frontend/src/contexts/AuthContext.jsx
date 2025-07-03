@@ -13,41 +13,79 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Sprawdź czy użytkownik jest zalogowany (localStorage)
+    // Sprawdź czy użytkownik jest zalogowany i pobierz jego dane
     const token = localStorage.getItem('authToken');
-    console.log('AuthContext: Checking token:', token);
     if (token) {
-      console.log('AuthContext: Token found, setting authenticated to true');
-      setIsAuthenticated(true);
+      fetchUserData(token);
     } else {
-      console.log('AuthContext: No token found, setting authenticated to false');
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    console.log('AuthContext: Attempting login with:', username, password);
-    // Prosta autoryzacja - w rzeczywistej aplikacji byłoby to zapytanie do API
-    if (username === 'admin' && password === 'admin123') {
-      console.log('AuthContext: Login successful');
-      localStorage.setItem('authToken', 'fake-jwt-token');
-      setIsAuthenticated(true);
-      return true;
+  const fetchUserData = async (token) => {
+    try {
+      const response = await fetch('/api/users/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        // Token nieprawidłowy
+        localStorage.removeItem('authToken');
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      localStorage.removeItem('authToken');
+      setIsAuthenticated(false);
+      setUser(null);
     }
-    console.log('AuthContext: Login failed');
-    return false;
+    setIsLoading(false);
+  };
+
+  const login = async (username, password) => {
+    try {
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('authToken', data.access_token);
+        await fetchUserData(data.access_token);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('authToken');
     setIsAuthenticated(false);
+    setUser(null);
   };
 
   const value = {
     isAuthenticated,
     isLoading,
+    user,
     login,
     logout
   };

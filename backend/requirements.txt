@@ -6,3 +6,7 @@ sqlalchemy[asyncio]
 alembic
 pydantic
 reportlab
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+email-validator

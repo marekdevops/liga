@@ -18,6 +18,9 @@ import PlayerForm from "./views/admin/PlayerForm";
 import MatchForm from "./views/admin/MatchForm";
 import MatchResultForm from "./views/admin/MatchResultForm";
 
+// Settings
+import Settings from "./pages/Settings";
+
 function App() {
   return (
     <AuthProvider>
@@ -30,6 +33,13 @@ function App() {
           <Route path="/league/:leagueId/teams" element={<LeagueTeams />} />
           <Route path="/league/:leagueId/matches" element={<LeagueMatches />} />
           <Route path="/team/:id" element={<TeamDetails />} />
+          
+          {/* Protected Routes */}
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
           
           {/* Protected Admin Routes */}
           <Route path="/admin" element={

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginModal from './LoginModal';
 
 export default function TopBar() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   console.log('TopBar: isAuthenticated =', isAuthenticated);
@@ -24,6 +24,9 @@ export default function TopBar() {
       }}>
         {isAuthenticated ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <span style={{ color: '#fff', fontSize: '14px' }}>
+              👤 {user?.username}
+            </span>
             <Link 
               to="/admin" 
               style={{
@@ -34,6 +37,17 @@ export default function TopBar() {
               }}
             >
               🛠️ Panel Admin
+            </Link>
+            <Link 
+              to="/settings" 
+              style={{
+                color: '#2196F3',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              ⚙️ Ustawienia
             </Link>
             <button
               onClick={logout}
